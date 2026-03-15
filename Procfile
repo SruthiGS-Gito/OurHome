@@ -1,1 +1,1 @@
-web: gunicorn OurHome.wsgi
+web: gunicorn config.wsgi
