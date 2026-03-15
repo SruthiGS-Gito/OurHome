@@ -1,0 +1,354 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  {% if active_category %}{{ active_category|title }} · {% endif %}
+  {% if active_climate_label %}{{ active_climate_label }} · {% endif %}
+  Materials Catalog — OurHome
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/products.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="materials-page">
+
+  <!-- ═══════════════════════════════════════
+       PAGE HEADER
+       ═══════════════════════════════════════ -->
+  <div class="materials-header">
+    <div class="container">
+      <h1 class="materials-title">Construction Materials</h1>
+      <p class="materials-sub">
+        <strong>{{ total_count }}</strong> verified material{{ total_count|pluralize }}
+        {% if active_climate_label %}
+          &nbsp;·&nbsp; Climate: <strong>{{ active_climate_label }}</strong>
+        {% endif %}
+        {% if active_category %}
+          &nbsp;·&nbsp; Category: <strong>{{ active_category|title }}</strong>
+        {% endif %}
+      </p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       FILTER BAR
+       Zone 1: Category pills (prominent, horizontally scrollable)
+       Zone 2: Filter strip — inline selects for Climate, Sort, Standard
+       ═══════════════════════════════════════ -->
+  <div class="filter-section">
+    <div class="filter-align">
+
+      <!-- ── Zone 1: Category pills ── -->
+      <div class="catalog-categories">
+        <a href="{% url 'product_list' %}?sort={{ active_sort }}{% if active_climate %}&climate={{ active_climate }}{% endif %}{% if active_is_standard %}&is_standard=yes{% endif %}"
+           class="cat-pill {% if not active_category %}active{% endif %}">All</a>
+        {% for cat_code, cat_label in category_choices %}
+        <a href="{% url 'product_list' %}?category={{ cat_code }}&sort={{ active_sort }}{% if active_climate %}&climate={{ active_climate }}{% endif %}{% if active_is_standard %}&is_standard=yes{% endif %}"
+           class="cat-pill {% if active_category == cat_code %}active{% endif %}">{{ cat_label }}</a>
+        {% endfor %}
+      </div>
+
+      <!-- ── Zone 2: Filter strip ── -->
+      <div class="filter-strip">
+
+        <span class="filter-strip-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+          Filters
+        </span>
+
+        <div class="filter-strip-divider"></div>
+
+        <!-- Climate -->
+        <div class="filter-chip-group">
+          <label for="fs-climate">Climate</label>
+          <select id="fs-climate" name="climate" onchange="applyFilter(this)"
+                  class="{% if active_climate %}active-filter{% endif %}">
+            <option value="">All Climates</option>
+            <option value="coastal_humid" {% if active_climate == 'coastal_humid' %}selected{% endif %}>🌊 Coastal &amp; Humid</option>
+            <option value="hot_dry"       {% if active_climate == 'hot_dry'       %}selected{% endif %}>🔥 Hot &amp; Dry</option>
+            <option value="heavy_rainfall"{% if active_climate == 'heavy_rainfall'%}selected{% endif %}>🌧️ Heavy Rainfall</option>
+            <option value="cold_hilly"    {% if active_climate == 'cold_hilly'    %}selected{% endif %}>🏔️ Cold &amp; Hilly</option>
+            <option value="cyclone_prone" {% if active_climate == 'cyclone_prone' %}selected{% endif %}>🌀 Cyclone-Prone</option>
+          </select>
+        </div>
+
+        <div class="filter-strip-divider"></div>
+
+        <!-- Sort -->
+        <div class="filter-chip-group">
+          <label for="fs-sort">Sort By</label>
+          <select id="fs-sort" name="sort" onchange="applyFilter(this)"
+                  class="{% if active_sort != 'popular' %}active-filter{% endif %}">
+            <option value="popular"    {% if active_sort == 'popular'    %}selected{% endif %}>Most Popular</option>
+            <option value="price_asc"  {% if active_sort == 'price_asc'  %}selected{% endif %}>Price: Low to High</option>
+            <option value="price_desc" {% if active_sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+            <option value="top_rated"  {% if active_sort == 'top_rated'  %}selected{% endif %}>Top Rated</option>
+            <option value="newest"     {% if active_sort == 'newest'     %}selected{% endif %}>Newest First</option>
+          </select>
+        </div>
+
+        <div class="filter-strip-divider"></div>
+
+        <!-- Phase -->
+        <div class="filter-chip-group">
+          <label for="fs-phase">Phase</label>
+          <select id="fs-phase" name="phase" onchange="applyFilter(this)"
+                  class="{% if active_phase %}active-filter{% endif %}">
+            <option value="">All Phases</option>
+            {% for phase_code, phase_label in phase_choices %}
+            <option value="{{ phase_code }}" {% if active_phase == phase_code %}selected{% endif %}>{{ phase_label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="filter-strip-divider"></div>
+
+        <!-- IS Standard -->
+        <div class="filter-chip-group">
+          <label for="fs-standard">Standard</label>
+          <select id="fs-standard" name="is_standard" onchange="applyFilter(this)"
+                  class="{% if active_is_standard %}active-filter{% endif %}">
+            <option value="">Any Standard</option>
+            <option value="yes" {% if active_is_standard %}selected{% endif %}>✓ IS Certified Only</option>
+          </select>
+        </div>
+
+        <!-- Clear all -->
+        {% if active_filters_count > 0 %}
+        <div class="filter-strip-divider"></div>
+        <a href="{% url 'product_list' %}" class="clear-filters">
+          Clear all ({{ active_filters_count }}) ✕
+        </a>
+        {% endif %}
+
+        <!-- Results count -->
+        <span class="filter-results-count">{{ total_count }} material{{ total_count|pluralize }}</span>
+
+      </div><!-- /filter-strip -->
+
+    </div><!-- /filter-align -->
+  </div><!-- /filter-section -->
+
+  <!-- ═══════════════════════════════════════
+       CLIMATE CONTEXT BANNER
+       Only shown when a specific climate filter is active.
+       ═══════════════════════════════════════ -->
+  {% if active_climate %}
+  <div class="container" style="padding-top:0; padding-bottom:0; margin-bottom:0.25rem;">
+    {% if active_climate == 'hot_dry' %}
+    <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px;
+                padding:0.75rem 1rem; font-size:0.85rem; color:#92400e;
+                display:flex; align-items:flex-start; gap:0.5rem;">
+      <span>🔥</span>
+      <span><strong>Hot &amp; Dry</strong> — Showing materials rated for heat resistance
+        and thermal insulation. Suitable for Rajasthan, Gujarat, and interior Deccan regions.
+        Based on IS codes and BIS standards.</span>
+    </div>
+    {% elif active_climate == 'coastal_humid' %}
+    <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px;
+                padding:0.75rem 1rem; font-size:0.85rem; color:#1e40af;
+                display:flex; align-items:flex-start; gap:0.5rem;">
+      <span>🌊</span>
+      <span><strong>Coastal &amp; Humid</strong> — Showing materials with saltwater
+        corrosion resistance and humidity protection. Essential for coastal Kerala,
+        Goa, and Konkan. Based on IS 456, IS 1786 (corrosion-resistant grade), and Kerala PWD standards.</span>
+    </div>
+    {% elif active_climate == 'heavy_rainfall' %}
+    <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px;
+                padding:0.75rem 1rem; font-size:0.85rem; color:#166534;
+                display:flex; align-items:flex-start; gap:0.5rem;">
+      <span>🌧️</span>
+      <span><strong>Heavy Rainfall</strong> — Showing materials with waterproofing,
+        drainage compatibility, and anti-fungal properties. Suited for Northeast India,
+        Western Ghats, and high-rainfall zones. Based on IS 2645 and NBC guidelines.</span>
+    </div>
+    {% elif active_climate == 'cold_hilly' %}
+    <div style="background:#f5f3ff; border:1px solid #ddd6fe; border-radius:8px;
+                padding:0.75rem 1rem; font-size:0.85rem; color:#4c1d95;
+                display:flex; align-items:flex-start; gap:0.5rem;">
+      <span>🏔️</span>
+      <span><strong>Cold &amp; Hilly</strong> — Showing materials with frost resistance
+        and thermal insulation. Designed for Himachal Pradesh, Uttarakhand, J&amp;K,
+        and high-altitude construction. Based on IS 456 cold-weather provisions.</span>
+    </div>
+    {% elif active_climate == 'cyclone_prone' %}
+    <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px;
+                padding:0.75rem 1rem; font-size:0.85rem; color:#166534;
+                display:flex; align-items:flex-start; gap:0.5rem;">
+      <span>🌀</span>
+      <span><strong>Cyclone-Prone Coast</strong> — Showing materials rated for high
+        wind resistance, storm surge, and saltwater corrosion. For coastal Odisha,
+        Andhra Pradesh, and cyclone belt regions. Based on IS codes and Kerala PWD standards.</span>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- ═══════════════════════════════════════
+       PRODUCT GRID + EMPTY STATE
+       ═══════════════════════════════════════ -->
+  <div class="container">
+
+    {% if page_obj.object_list %}
+
+    <div class="product-grid">
+      {% for product in page_obj %}
+
+      <article class="product-card">
+
+        <!-- Card image area — clicking goes to detail page.
+             We pass ?from_climate= so the detail page knows which climate
+             the user was filtering for. This enables the warning/success banner. -->
+        <a href="{% url 'product_detail' product.slug %}{% if active_climate %}?from_climate={{ active_climate }}{% endif %}"
+           class="card-img-link">
+
+          {% if product.primary_image_url %}
+            <img src="{{ product.primary_image_url }}"
+                 alt="{{ product.name }}"
+                 class="card-img"
+                 loading="lazy"
+                 onerror="this.parentElement.innerHTML='<div class=\'card-img card-img-placeholder\'><span class=\'placeholder-icon\'>🏗️</span><span class=\'placeholder-cat\'>{{ product.get_category_display }}</span></div>'">
+          {% elif product.primary_image %}
+            <img src="{{ product.primary_image.url }}"
+                 alt="{{ product.name }}"
+                 class="card-img"
+                 loading="lazy">
+          {% else %}
+            <div class="card-img card-img-placeholder">
+              <span class="placeholder-icon">🏗️</span>
+              <span class="placeholder-cat">{{ product.get_category_display }}</span>
+            </div>
+          {% endif %}
+
+          <!-- Climate overlay badge — ONLY shown when a climate filter is active.
+               Appears on top of the image so users instantly see suitability
+               without opening the detail page. -->
+          {% if active_climate %}
+            {% for badge in product.climate_badges %}
+              {% if badge.key == active_climate %}
+                <div class="climate-overlay {% if badge.suitable %}overlay-ok{% else %}overlay-warn{% endif %}">
+                  {% if badge.suitable %}✓ Suitable{% else %}✗ Not suitable{% endif %}
+                </div>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+
+        </a><!-- /card-img-link -->
+
+        <!-- Card body -->
+        <div class="card-body">
+
+          <div class="card-meta-row">
+            <span class="card-cat-tag">{{ product.get_category_display }}</span>
+            {% if product.is_code %}
+              <span class="card-iscode">{{ product.is_code }}</span>
+            {% endif %}
+          </div>
+
+          <h3 class="card-name">
+            <a href="{% url 'product_detail' product.slug %}{% if active_climate %}?from_climate={{ active_climate }}{% endif %}">
+              {{ product.name }}
+            </a>
+          </h3>
+
+          <p class="card-brand">{{ product.brand }}</p>
+
+          <div class="card-price-row">
+            <span class="card-price">₹{{ product.price|floatformat:0 }}</span>
+            <span class="card-unit">/ {{ product.unit }}</span>
+            {% if product.mrp != product.price %}
+              <span class="card-mrp">MRP ₹{{ product.mrp|floatformat:0 }}</span>
+            {% endif %}
+          </div>
+
+          <!-- Mini climate chips — shown only when NO climate filter is active.
+               When a filter IS active, the overlay badge on the image says it all. -->
+          {% if not active_climate %}
+          <div class="card-climate-chips">
+            {% for badge in product.climate_badges %}
+              {% if badge.suitable %}
+                <span class="mini-chip">{{ badge.label }}</span>
+              {% endif %}
+            {% empty %}
+              <span class="mini-chip-none">No climate data</span>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <a href="{% url 'product_detail' product.slug %}{% if active_climate %}?from_climate={{ active_climate }}{% endif %}"
+             class="btn-card-cta">
+            View Details →
+          </a>
+
+        </div><!-- /card-body -->
+      </article>
+
+      {% endfor %}
+    </div><!-- /product-grid -->
+
+    <!-- ─── Can't find CTA ───────────────────────── -->
+    <div class="cant-find-cta">
+      <div class="cant-find-text">
+        <strong>Can't find what you're looking for?</strong>
+        <span>Our AI Analyzer can check any material from a contractor's quote — even if it's not in our catalog.</span>
+      </div>
+      <a href="{% url 'material_analyzer' %}" class="cant-find-btn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Try AI Analyzer →
+      </a>
+    </div>
+
+    <!-- ─── Pagination ────────────────────────────── -->
+    {% if page_obj.has_other_pages %}
+    <div class="pagination">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}&sort={{ active_sort }}{% if active_category %}&category={{ active_category }}{% endif %}{% if active_climate %}&climate={{ active_climate }}{% endif %}"
+           class="page-btn">← Prev</a>
+      {% endif %}
+      <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}&sort={{ active_sort }}{% if active_category %}&category={{ active_category }}{% endif %}{% if active_climate %}&climate={{ active_climate }}{% endif %}"
+           class="page-btn">Next →</a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+
+    <!-- ─── Empty state ───────────────────────────── -->
+    <div class="empty-state">
+      <div class="empty-icon">🔍</div>
+      <h3>No materials found</h3>
+      <p>
+        {% if active_category or active_climate %}
+          No products match your current filters.
+          <a href="{% url 'product_list' %}">Clear filters</a> to see all materials.
+        {% else %}
+          No products have been added yet. Check back soon.
+        {% endif %}
+      </p>
+    </div>
+
+    {% endif %}
+
+  </div><!-- /container -->
+
+</div><!-- /materials-page -->
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function applyFilter(selectEl) {
+  const params = new URLSearchParams(window.location.search);
+  if (selectEl.value) {
+    params.set(selectEl.name, selectEl.value);
+  } else {
+    params.delete(selectEl.name);
+  }
+  params.delete('page');
+  window.location.search = params.toString();
+}
+</script>
+{% endblock %}

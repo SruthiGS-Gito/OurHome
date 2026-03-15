@@ -1,0 +1,799 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Material Analyzer — Verify Your Contractor Quote | OurHome{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/analyzer.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="az-page">
+
+  <!-- ══════════════════════════════════════════════════════════════
+       HERO
+       ══════════════════════════════════════════════════════════════ -->
+  <div class="az-hero">
+    <div class="az-hero-container">
+      <div class="az-hero-content">
+        <div class="az-hero-eyebrow">Free &nbsp;·&nbsp; Instant &nbsp;·&nbsp; No Account Needed</div>
+        <h1 class="az-hero-title">Material<br>Analyzer</h1>
+        <p class="az-hero-sub">
+          Upload your contractor bill or enter items manually — get an instant report on
+          climate suitability, pricing, illegal markups, and smart alternatives.
+        </p>
+        <ul class="az-hero-features">
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            AI reads your PDF or photo bill intelligently
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            Flags overpricing, illegal markups, and wrong materials
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            Chat follow-ups answered honestly, like Gemini
+          </li>
+        </ul>
+        <a href="#az-tabs" class="az-hero-cta">Start Analyzing →</a>
+      </div>
+      <div class="az-hero-visual" aria-hidden="true">
+        <div class="az-sample-card">
+          <div class="az-sample-header">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Sample Report
+          </div>
+          <div class="az-sample-body">
+            <div class="az-sample-row">
+              <div class="az-sample-name">OPC 53 Cement <span class="az-sample-note">Coastal zone</span></div>
+              <span class="az-sample-chip az-sample-chip--avoid">Avoid</span>
+            </div>
+            <div class="az-sample-row">
+              <div class="az-sample-name">TMT Steel Fe500</div>
+              <span class="az-sample-chip az-sample-chip--high">High</span>
+            </div>
+            <div class="az-sample-row">
+              <div class="az-sample-name">Clay Bricks</div>
+              <span class="az-sample-chip az-sample-chip--illegal">ILLEGAL</span>
+            </div>
+            <div class="az-sample-row">
+              <div class="az-sample-name">PPC Cement</div>
+              <span class="az-sample-chip az-sample-chip--fair">Fair</span>
+            </div>
+          </div>
+          <div class="az-sample-footer">
+            <div class="az-sample-stat"><span>Quoted Total</span><strong>₹2,84,500</strong></div>
+            <div class="az-sample-divider"></div>
+            <div class="az-sample-stat az-sample-stat--red"><span>Overcharge</span><strong>+₹42,500</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════
+       TOOL SHELL — segmented control + both panels
+       ══════════════════════════════════════════════════════════════ -->
+  <div class="az-tool-shell" id="az-tabs">
+
+    <!-- Compact segmented tab control -->
+    <div class="az-seg-wrap">
+      <div class="az-seg">
+        <button class="az-seg-btn" id="tab-btn-ai" onclick="switchTab('ai')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+          </svg>
+          AI Bill Analyzer
+          <span class="az-seg-badge">New</span>
+        </button>
+        <button class="az-seg-btn" id="tab-btn-manual" onclick="switchTab('manual')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          Manual Entry
+        </button>
+      </div>
+    </div>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       TAB 1 — AI BILL ANALYZER
+       ══════════════════════════════════════════════════════════════ -->
+  <div class="az-tab-panel" id="panel-ai">
+
+    {% if bill_error %}
+    <div class="az-section-wrap">
+      <div class="az-form-error" style="max-width:700px;margin:0 auto;">{{ bill_error }}</div>
+    </div>
+    {% endif %}
+
+    {% if bill_analysis %}
+    <!-- ── ACTIVE ANALYSIS: Chat Interface ───────────────────── -->
+    <div class="az-chat-page">
+
+      <!-- Chat top bar -->
+      <div class="az-chat-topbar">
+        <div class="az-chat-file-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          {{ bill_filename|default:"Uploaded bill" }}
+          <span class="az-analyzed-badge">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            Analyzed
+          </span>
+        </div>
+        <form method="post" action="{% url 'bill_clear' %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="az-new-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.27"/></svg>
+            New Analysis
+          </button>
+        </form>
+      </div>
+
+      <!-- Messages area -->
+      <div class="az-chat-msgs" id="chatMsgs">
+        <!-- Initial analysis as first AI message -->
+        <div class="az-msg az-msg--ai">
+          <div class="az-msg-avatar">AI</div>
+          <div class="az-msg-bubble" id="initialMsgBubble">
+            <!-- Rendered by JS from bill_history_json -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Suggestion chips -->
+      <div class="az-suggests" id="chatSuggests">
+        <button class="az-suggest" onclick="useSuggest(this)">Are all prices fair?</button>
+        <button class="az-suggest" onclick="useSuggest(this)">Any climate issues?</button>
+        <button class="az-suggest" onclick="useSuggest(this)">How should I negotiate?</button>
+        <button class="az-suggest" onclick="useSuggest(this)">Show me cheaper alternatives</button>
+        <button class="az-suggest" onclick="useSuggest(this)">Are there any arithmetic errors?</button>
+      </div>
+
+      <!-- Input bar -->
+      <div class="az-chat-input-bar">
+        <textarea id="chatInput" class="az-chat-input"
+                  placeholder="Ask anything about your bill — prices, materials, negotiation, climate…"
+                  rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="az-send-btn" id="sendBtn" onclick="handleSend()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+
+    {% else %}
+    <!-- ── NO ANALYSIS YET ────────────────────────────────────── -->
+
+    <!-- How it works (AI tab) -->
+    <div class="az-how">
+      <div class="az-how-inner">
+        <div class="az-how-step">
+          <div class="az-how-num">1</div>
+          <div class="az-how-text">
+            <strong>Upload your bill</strong>
+            <span>PDF, photo, or screenshot — our AI reads handwritten and typed formats</span>
+          </div>
+        </div>
+        <div class="az-how-arrow">→</div>
+        <div class="az-how-step">
+          <div class="az-how-num">2</div>
+          <div class="az-how-text">
+            <strong>AI reads every line item</strong>
+            <span>Extracts materials, quantities, and prices automatically — no manual entry needed</span>
+          </div>
+        </div>
+        <div class="az-how-arrow">→</div>
+        <div class="az-how-step">
+          <div class="az-how-num">3</div>
+          <div class="az-how-text">
+            <strong>Get your report + chat</strong>
+            <span>Instant flags on overpricing and wrong materials, then ask follow-up questions</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="az-upload-section">
+      <div class="az-upload-card">
+        <div class="az-upload-header">
+          <h2 class="az-upload-title">Upload Your Contractor Bill</h2>
+          <p class="az-upload-sub">Our AI will read the bill, verify prices, check climate suitability, and answer any follow-up questions.</p>
+        </div>
+
+        <form method="post" action="{% url 'bill_upload' %}" enctype="multipart/form-data" id="uploadForm">
+          {% csrf_token %}
+
+          <div class="az-dropzone" id="dropzone"
+               onclick="document.getElementById('billFileInput').click()"
+               ondragover="event.preventDefault(); this.classList.add('az-dropzone--over')"
+               ondragleave="this.classList.remove('az-dropzone--over')"
+               ondrop="handleDrop(event)">
+            <div class="az-dropzone-icon">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <div class="az-dropzone-title">Drop your bill here, or <span class="az-dropzone-browse">browse</span></div>
+            <div class="az-dropzone-types">PDF · JPG · PNG · WEBP &nbsp;·&nbsp; Max 8 MB</div>
+            <input type="file" name="bill_file" id="billFileInput" accept=".pdf,.jpg,.jpeg,.png,.webp"
+                   style="display:none" onchange="onFileChosen(this)">
+          </div>
+
+          <div class="az-file-preview" id="filePreview" style="display:none;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span id="filePreviewName"></span>
+            <span id="filePreviewSize" class="az-file-size"></span>
+            <button type="button" class="az-file-remove" onclick="removeFile()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          <button type="submit" class="az-analyze-btn" id="analyzeBtn" style="display:none;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Analyze with AI
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="az-upload-feats-bar">
+      <div class="az-upload-feat">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Reads handwritten or typed bills
+      </div>
+      <div class="az-upload-feat">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Identifies all line items automatically
+      </div>
+      <div class="az-upload-feat">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Chat to ask any follow-up question
+      </div>
+    </div>
+
+    {% endif %}
+
+  </div><!-- /panel-ai -->
+
+
+  <!-- ══════════════════════════════════════════════════════════════
+       TAB 2 — MANUAL ENTRY (existing feature, untouched)
+       ══════════════════════════════════════════════════════════════ -->
+  <div class="az-tab-panel" id="panel-manual">
+
+    <!-- How it works -->
+    {% if not report %}
+    <div class="az-how">
+      <div class="az-how-inner">
+        <div class="az-how-step">
+          <div class="az-how-num">1</div>
+          <div class="az-how-text">
+            <strong>Select your climate zone</strong>
+            <span>Kerala has 5 distinct zones — materials that fail in one may be perfect in another</span>
+          </div>
+        </div>
+        <div class="az-how-arrow">→</div>
+        <div class="az-how-step">
+          <div class="az-how-num">2</div>
+          <div class="az-how-text">
+            <strong>Add materials from your quote</strong>
+            <span>Pick each item from our verified catalog, enter the contractor's quoted price and quantity</span>
+          </div>
+        </div>
+        <div class="az-how-arrow">→</div>
+        <div class="az-how-step">
+          <div class="az-how-num">3</div>
+          <div class="az-how-text">
+            <strong>Get your report instantly</strong>
+            <span>We compare every line against market prices, legal MRP, and your climate zone</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Manual Entry Form -->
+    <div class="az-form-section" id="analyzerForm">
+      <div class="az-form-card">
+        <h2 class="az-form-title">
+          {% if report %}Analyze Another Quote{% else %}Enter Your Quote Details{% endif %}
+        </h2>
+
+        {% if error %}
+          <div class="az-form-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="post" id="manualForm">
+          {% csrf_token %}
+
+          <div class="az-field-group">
+            <label class="az-label">Your Climate Zone <span class="az-required">*</span></label>
+            <div class="az-climate-grid">
+              {% for key, label in climate_filters %}
+              <label class="az-climate-option {% if selected_climate == key or not selected_climate and key == 'coastal_humid' %}selected{% endif %}">
+                <input type="radio" name="climate" value="{{ key }}"
+                       {% if selected_climate == key or not selected_climate and key == 'coastal_humid' %}checked{% endif %}
+                       onchange="document.querySelectorAll('.az-climate-option').forEach(el=>el.classList.remove('selected')); this.closest('.az-climate-option').classList.add('selected')">
+                <span class="az-climate-label">{{ label }}</span>
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="az-field-group">
+            <label class="az-label">Materials from Quote <span class="az-required">*</span></label>
+            <div class="az-table-wrap">
+              <table class="az-table" id="materialsTable">
+                <thead>
+                  <tr>
+                    <th>Material</th><th>Unit</th>
+                    <th>Quoted Price (₹ per unit)</th><th>Quantity</th><th></th>
+                  </tr>
+                </thead>
+                <tbody id="materialsBody">
+                  <tr class="az-row" id="row-0">
+                    <td>
+                      <select name="product_id" class="az-select az-prod-select" required onchange="fillUnit(this)">
+                        <option value="">— Select material —</option>
+                        {% regroup products_qs by get_category_display as cat_list %}
+                        {% for cat in cat_list %}
+                          <optgroup label="{{ cat.grouper }}">
+                            {% for p in cat.list %}
+                            <option value="{{ p.pk }}" data-unit="{{ p.unit }}" data-price="{{ p.price }}" data-mrp="{{ p.mrp }}">
+                              {{ p.name }} ({{ p.brand }}) — MRP ₹{{ p.mrp|floatformat:0 }}/{{ p.unit }}
+                            </option>
+                            {% endfor %}
+                          </optgroup>
+                        {% endfor %}
+                      </select>
+                    </td>
+                    <td><span class="az-unit-cell" id="unit-0">—</span></td>
+                    <td><input type="number" name="quoted_price" class="az-input" placeholder="e.g. 420" min="1" step="0.01" required></td>
+                    <td><input type="number" name="quantity" class="az-input" placeholder="e.g. 50" min="0.01" step="0.01" required></td>
+                    <td>
+                      <button type="button" class="az-del-btn" onclick="removeRow(this)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <button type="button" class="az-add-row-btn" onclick="addRow()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Another Material
+            </button>
+          </div>
+
+          <button type="submit" class="az-submit-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            Analyze My Quote
+          </button>
+        </form>
+      </div>
+    </div>
+
+
+    <!-- ── REPORT (appears after form submission) ── -->
+    {% if report %}
+    <div class="az-report" id="report">
+
+      {% if report.has_stale_prices %}
+      <div class="az-stale-banner">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span><strong>Price data notice:</strong> Some prices in this analysis are over 90 days old or have no update date. Verify current rates with your supplier before making decisions.</span>
+      </div>
+      {% endif %}
+
+      {% if report.all_fair %}
+      <div class="az-verdict az-verdict--good">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        <div>
+          <strong>Your quote looks great!</strong>
+          <p>All materials are climate-suitable and priced at or below market rates. Proceed with confidence.</p>
+        </div>
+      </div>
+      {% elif report.illegal_count > 0 %}
+      <div class="az-verdict az-verdict--danger">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div>
+          <strong>Warning — {{ report.illegal_count }} item{{ report.illegal_count|pluralize }} priced above MRP (illegal)</strong>
+          <p>Contractors cannot legally charge more than the printed MRP. Raise this immediately and ask for a corrected quote. See alternatives below.</p>
+        </div>
+      </div>
+      {% else %}
+      <div class="az-verdict az-verdict--warn">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div>
+          <strong>Review needed — {{ report.high_count }} item{{ report.high_count|pluralize }} above market price{% if report.unsuitable_count %}, {{ report.unsuitable_count }} unsuitable for {{ report.climate_label }}{% endif %}</strong>
+          <p>Some items are above typical market pricing or wrong for your climate. Alternatives are shown below each flagged item.</p>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="az-summary-grid">
+        <div class="az-summary-card">
+          <div class="az-summary-val">₹{{ report.total_quoted|floatformat:0 }}</div>
+          <div class="az-summary-lbl">Total Quoted</div>
+        </div>
+        <div class="az-summary-card">
+          <div class="az-summary-val">₹{{ report.total_fair|floatformat:0 }}</div>
+          <div class="az-summary-lbl">Fair Market Total</div>
+        </div>
+        <div class="az-summary-card {% if report.difference > 0 %}az-summary-card--bad{% elif report.difference < 0 %}az-summary-card--good{% endif %}">
+          <div class="az-summary-val">
+            {% if report.difference > 0 %}
+              +₹{{ report.difference_abs|floatformat:0 }}
+            {% elif report.difference < 0 %}
+              -₹{{ report.difference_abs|floatformat:0 }}
+            {% else %}
+              ₹0
+            {% endif %}
+          </div>
+          <div class="az-summary-lbl">
+            {% if report.difference > 0 %}You're Overpaying
+            {% elif report.difference < 0 %}You're Saving
+            {% else %}At Market Rate{% endif %}
+          </div>
+        </div>
+        <div class="az-summary-card">
+          <div class="az-summary-val">{{ report.items|length }}</div>
+          <div class="az-summary-lbl">Items Analyzed</div>
+        </div>
+      </div>
+
+      <div class="az-flag-row">
+        <span class="az-flag az-flag--climate">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          {{ report.climate_label }}
+        </span>
+        {% if report.unsuitable_count %}<span class="az-flag az-flag--warn">{{ report.unsuitable_count }} climate mismatch</span>{% endif %}
+        {% if report.illegal_count %}<span class="az-flag az-flag--danger">{{ report.illegal_count }} above MRP</span>{% endif %}
+        {% if report.high_count %}<span class="az-flag az-flag--high">{{ report.high_count }} overpriced</span>{% endif %}
+      </div>
+
+      <!-- Item breakdown with inline alternatives -->
+      <div class="az-report-table-wrap">
+        <h3 class="az-report-section-title">Item-by-Item Breakdown</h3>
+        <table class="az-report-table">
+          <thead>
+            <tr>
+              <th>Material</th><th>Climate</th><th>Market Price</th><th>MRP</th>
+              <th>Quoted</th><th>Qty</th><th>Line Total</th><th>vs Market</th><th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in report.items %}
+            <tr class="az-report-row az-report-row--{{ item.price_verdict }}{% if not item.is_suitable %} az-report-row--unsuitable{% endif %}">
+              <td>
+                <a href="{% url 'product_detail' item.product.slug %}" class="az-prod-link" target="_blank">{{ item.product.name }}</a>
+                <span class="az-prod-brand">{{ item.product.brand }}</span>
+              </td>
+              <td>
+                {% if item.is_suitable %}
+                  <span class="az-climate-ok"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> OK</span>
+                {% else %}
+                  <span class="az-climate-bad"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Avoid</span>
+                {% endif %}
+              </td>
+              <td class="az-num">₹{{ item.product.price|floatformat:0 }}/{{ item.product.unit }}</td>
+              <td class="az-num">₹{{ item.product.mrp|floatformat:0 }}/{{ item.product.unit }}</td>
+              <td class="az-num az-quoted">₹{{ item.quoted_price|floatformat:0 }}/{{ item.product.unit }}</td>
+              <td class="az-num">{{ item.quantity|floatformat:2 }} {{ item.product.unit }}</td>
+              <td class="az-num">₹{{ item.line_quoted|floatformat:0 }}</td>
+              <td class="az-num {% if item.overcharge > 0 %}az-over{% elif item.overcharge < 0 %}az-under{% endif %}">
+                {% if item.overcharge > 0 %}+₹{{ item.overcharge_abs|floatformat:0 }}
+                {% elif item.overcharge < 0 %}-₹{{ item.overcharge_abs|floatformat:0 }}
+                {% else %}—{% endif %}
+              </td>
+              <td>
+                {% if item.price_verdict == 'illegal' %}<span class="az-verdict-chip az-verdict-chip--illegal">ILLEGAL</span>
+                {% elif item.price_verdict == 'high' %}<span class="az-verdict-chip az-verdict-chip--high">High</span>
+                {% else %}<span class="az-verdict-chip az-verdict-chip--fair">Fair</span>{% endif %}
+              </td>
+            </tr>
+
+            <!-- ALTERNATIVES ROW — only shown when there's a problem -->
+            {% if item.alternatives %}
+            <tr class="az-alt-row">
+              <td colspan="9">
+                <div class="az-alt-panel">
+                  <div class="az-alt-label">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    {% if not item.is_suitable %}
+                      Better choice for {{ report.climate_label }}:
+                    {% else %}
+                      Negotiate or switch to a cheaper option:
+                    {% endif %}
+                  </div>
+                  <div class="az-alt-cards">
+                    {% for alt in item.alternatives %}
+                    <a href="{% url 'product_detail' alt.slug %}" class="az-alt-card" target="_blank">
+                      <div class="az-alt-card-name">{{ alt.name }}</div>
+                      <div class="az-alt-card-brand">{{ alt.brand }}</div>
+                      <div class="az-alt-card-price">₹{{ alt.price|floatformat:0 }}/{{ alt.unit }}</div>
+                      {% if not item.is_suitable %}<div class="az-alt-card-badge">Climate-safe</div>{% endif %}
+                      {% if item.price_verdict == 'illegal' or item.price_verdict == 'high' %}
+                        <div class="az-alt-card-badge az-alt-card-badge--green">Market rate</div>
+                      {% endif %}
+                    </a>
+                    {% endfor %}
+                  </div>
+                </div>
+              </td>
+            </tr>
+            {% endif %}
+
+            <!-- Price source attribution row -->
+            <tr class="az-source-row">
+              <td colspan="9">
+                <span class="az-source-badge az-source-badge--{{ item.price_source_badge.style }}">
+                  {{ item.price_source_badge.icon }} {{ item.price_source_badge.text }}
+                </span>
+              </td>
+            </tr>
+
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr class="az-report-total">
+              <td colspan="6"><strong>TOTAL</strong></td>
+              <td class="az-num"><strong>₹{{ report.total_quoted|floatformat:0 }}</strong></td>
+              <td class="az-num {% if report.difference > 0 %}az-over{% elif report.difference < 0 %}az-under{% endif %}">
+                <strong>{% if report.difference > 0 %}+₹{{ report.difference_abs|floatformat:0 }}{% elif report.difference < 0 %}-₹{{ report.difference_abs|floatformat:0 }}{% else %}—{% endif %}</strong>
+              </td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="az-legend">
+        <div class="az-legend-item"><span class="az-verdict-chip az-verdict-chip--fair">Fair</span> At or below market price</div>
+        <div class="az-legend-item"><span class="az-verdict-chip az-verdict-chip--high">High</span> Above market — try negotiating</div>
+        <div class="az-legend-item"><span class="az-verdict-chip az-verdict-chip--illegal">ILLEGAL</span> Above printed MRP — not legally allowed</div>
+        <div class="az-legend-item"><span class="az-climate-bad"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Avoid</span> Wrong material for your climate</div>
+      </div>
+
+    </div><!-- /az-report -->
+    {% endif %}
+
+  </div><!-- /panel-manual -->
+
+  </div><!-- /az-tool-shell -->
+
+</div><!-- /az-page -->
+{% endblock %}
+
+
+{% block extra_js %}
+<!-- marked.js for markdown rendering in AI chat -->
+<script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+
+<script>
+// ─── Tab switching ───────────────────────────────────────────
+function switchTab(tab, scroll) {
+  ['ai','manual'].forEach(t => {
+    document.getElementById('panel-' + t).style.display    = (t === tab) ? 'block' : 'none';
+    document.getElementById('tab-btn-' + t).classList.toggle('az-tab--active', t === tab);
+  });
+  if (scroll !== false) document.getElementById('az-tabs').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+// ─── Manual entry row helpers ────────────────────────────────
+let rowCount = 0;
+
+function fillUnit(sel) {
+  const row = sel.closest('tr');
+  const opt = sel.options[sel.selectedIndex];
+  const cell = row.querySelector('.az-unit-cell');
+  if (cell) cell.textContent = opt.dataset.unit || '—';
+}
+
+function addRow() {
+  rowCount++;
+  const body  = document.getElementById('materialsBody');
+  const clone = body.querySelector('.az-row').cloneNode(true);
+  clone.id = 'row-' + rowCount;
+  clone.querySelectorAll('select').forEach(s => s.value = '');
+  clone.querySelectorAll('input').forEach(i => i.value = '');
+  clone.querySelector('.az-unit-cell').textContent = '—';
+  clone.querySelector('.az-prod-select').setAttribute('onchange', 'fillUnit(this)');
+  body.appendChild(clone);
+}
+
+function removeRow(btn) {
+  const body = document.getElementById('materialsBody');
+  if (body.querySelectorAll('.az-row').length > 1) btn.closest('tr').remove();
+}
+
+// ─── File upload helpers ─────────────────────────────────────
+function onFileChosen(input) {
+  if (!input.files.length) return;
+  showFilePreview(input.files[0]);
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropzone').classList.remove('az-dropzone--over');
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  document.getElementById('billFileInput').files; // can't set programmatically
+  // Trick: create a DataTransfer to assign to the input
+  try {
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    document.getElementById('billFileInput').files = dt.files;
+  } catch(err) {}
+  showFilePreview(file);
+}
+
+function showFilePreview(file) {
+  const dropzone  = document.getElementById('dropzone');
+  const preview   = document.getElementById('filePreview');
+  const nameEl    = document.getElementById('filePreviewName');
+  const sizeEl    = document.getElementById('filePreviewSize');
+  const analyzeBtn = document.getElementById('analyzeBtn');
+
+  nameEl.textContent = file.name;
+  sizeEl.textContent = (file.size / 1024 / 1024).toFixed(1) + ' MB';
+  dropzone.style.display  = 'none';
+  preview.style.display   = 'flex';
+  analyzeBtn.style.display = 'inline-flex';
+}
+
+function removeFile() {
+  document.getElementById('billFileInput').value = '';
+  document.getElementById('dropzone').style.display  = 'flex';
+  document.getElementById('filePreview').style.display = 'none';
+  document.getElementById('analyzeBtn').style.display  = 'none';
+}
+
+// ─── Chat helpers ────────────────────────────────────────────
+const BILL_HISTORY = {{ bill_history_json|safe }};
+let chatHistory = Array.isArray(BILL_HISTORY) ? [...BILL_HISTORY] : [];
+let isSending   = false;
+
+// Render the initial analysis
+window.addEventListener('DOMContentLoaded', () => {
+  const initBubble = document.getElementById('initialMsgBubble');
+  if (initBubble && chatHistory.length >= 2) {
+    initBubble.innerHTML = marked.parse(chatHistory[1].text);
+  }
+  // Activate correct tab — report takes priority over bill_analysis
+  // so submitting the manual form always lands on the manual tab.
+  {% if report %}
+  switchTab('manual', false);
+  setTimeout(() => document.getElementById('report').scrollIntoView({behavior:'smooth', block:'start'}), 200);
+  {% elif bill_analysis %}
+  switchTab('ai', false);
+  {% else %}
+  switchTab('ai', false);
+  {% endif %}
+});
+
+function useSuggest(btn) {
+  document.getElementById('chatInput').value = btn.textContent;
+  document.getElementById('chatSuggests').style.display = 'none';
+  handleSend();
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+}
+
+function scrollBottom() {
+  const msgs = document.getElementById('chatMsgs');
+  if (msgs) msgs.scrollTop = msgs.scrollHeight;
+}
+
+function addMsgBubble(role, html) {
+  const msgs  = document.getElementById('chatMsgs');
+  const wrap  = document.createElement('div');
+  wrap.className = 'az-msg az-msg--' + role;
+
+  if (role === 'ai') {
+    wrap.innerHTML = `<div class="az-msg-avatar">AI</div><div class="az-msg-bubble">${html}</div>`;
+  } else {
+    wrap.innerHTML = `<div class="az-msg-bubble az-msg-bubble--user">${html}</div>`;
+  }
+  msgs.appendChild(wrap);
+  scrollBottom();
+  return wrap.querySelector('.az-msg-bubble:last-child');
+}
+
+async function handleSend() {
+  const input = document.getElementById('chatInput');
+  const msg   = input.value.trim();
+  if (!msg || isSending) return;
+
+  input.value = '';
+  autoResize(input);
+  isSending = true;
+  document.getElementById('sendBtn').disabled = true;
+  document.getElementById('chatSuggests').style.display = 'none';
+
+  // User bubble
+  addMsgBubble('user', msg.replace(/</g,'&lt;'));
+
+  // AI bubble with thinking indicator
+  const msgs = document.getElementById('chatMsgs');
+  const aiWrap = document.createElement('div');
+  aiWrap.className = 'az-msg az-msg--ai';
+  aiWrap.innerHTML = `<div class="az-msg-avatar">AI</div>
+    <div class="az-msg-bubble" id="streamBubble">
+      <div class="az-thinking"><span></span><span></span><span></span></div>
+    </div>`;
+  msgs.appendChild(aiWrap);
+  scrollBottom();
+
+  const histSnap = [...chatHistory];
+  chatHistory.push({role: 'user', text: msg});
+
+  try {
+    const res = await fetch("{% url 'bill_chat' %}", {
+      method: 'POST',
+      headers: {'Content-Type':'application/json', 'X-CSRFToken':'{{ csrf_token }}'},
+      body: JSON.stringify({message: msg, history: histSnap}),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({error: 'Request failed'}));
+      document.getElementById('streamBubble').innerHTML =
+        `<em class="az-chat-err">${err.error || 'Something went wrong.'}</em>`;
+      isSending = false;
+      document.getElementById('sendBtn').disabled = false;
+      return;
+    }
+
+    const reader  = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '', fullText = '';
+    const bubble = document.getElementById('streamBubble');
+    bubble.innerHTML = '';   // remove thinking dots
+
+    while (true) {
+      const {done, value} = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, {stream: true});
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const raw = line.slice(6).trim();
+        if (!raw) continue;
+        try {
+          const parsed = JSON.parse(raw);
+          if (typeof parsed === 'string') {
+            fullText += parsed;
+            bubble.innerHTML = marked.parse(fullText);
+            scrollBottom();
+          } else if (parsed.__done__ !== undefined) {
+            fullText = parsed.__done__;
+            bubble.innerHTML = marked.parse(fullText);
+            chatHistory.push({role: 'assistant', text: fullText});
+            scrollBottom();
+          } else if (parsed.__error__) {
+            bubble.innerHTML = `<em class="az-chat-err">Error: ${parsed.__error__}</em>`;
+          }
+        } catch(e) {}
+      }
+    }
+
+  } catch(err) {
+    const b = document.getElementById('streamBubble');
+    if (b) b.innerHTML = `<em class="az-chat-err">Network error. Please try again.</em>`;
+  }
+
+  isSending = false;
+  document.getElementById('sendBtn').disabled = false;
+}
+
+</script>
+{% endblock %}

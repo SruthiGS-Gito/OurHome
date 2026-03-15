@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  {% if query %}Search "{{ query }}" — OurHome{% else %}Search — OurHome{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/search.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="sr-page">
+
+  <!-- ══════════════════════════════════════════════════════════════
+       HERO — search bar
+       ══════════════════════════════════════════════════════════════ -->
+  <div class="sr-hero">
+    <div class="sr-hero-inner">
+      <div class="sr-hero-eyebrow">Materials &nbsp;·&nbsp; Contractors &nbsp;·&nbsp; Designers</div>
+      <h1 class="sr-hero-title">Find anything on OurHome</h1>
+      <form method="GET" action="{% url 'search' %}" class="sr-search-form"
+            hx-get="{% url 'search' %}" hx-trigger="input delay:300ms" hx-target="#sr-results" hx-push-url="true">
+        <input type="text" name="q" value="{{ query }}"
+               class="sr-search-input"
+               placeholder="Search cement, contractors, interior designers…"
+               autofocus>
+        <button type="submit" class="sr-search-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span>Search</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       RESULTS BODY
+       ══════════════════════════════════════════════════════════════ -->
+  <div class="sr-body">
+
+    {% if query %}
+      <!-- Result count pill -->
+      <div class="sr-meta">
+        <div class="sr-count-pill">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span class="sr-count-num">{{ total_count }}</span> result{{ total_count|pluralize }}
+        </div>
+        <p class="sr-query-label">Showing results for <strong>"{{ query }}"</strong></p>
+      </div>
+    {% endif %}
+
+    <div id="sr-results">
+
+      {% if query %}
+
+        {% if not products and not contractors and not architects and not designers %}
+        <!-- ── Empty state ── -->
+        <div class="sr-empty">
+          <div class="sr-empty-icon">🔍</div>
+          <h2 class="sr-empty-title">No results for "{{ query }}"</h2>
+          <p class="sr-empty-sub">Try a different spelling, or browse our materials catalog and service provider directory directly.</p>
+        </div>
+
+        {% else %}
+
+          <!-- ── Materials ── -->
+          {% if products %}
+          <div class="sr-section">
+            <div class="sr-section-head">
+              <div class="sr-section-icon sr-section-icon--materials">🏗️</div>
+              <h2 class="sr-section-title">Materials</h2>
+              <span class="sr-section-count">{{ products|length }} found</span>
+            </div>
+            <div class="sr-materials-grid">
+              {% for product in products %}
+              <a href="{% url 'product_detail' product.slug %}" class="sr-mat-card">
+                <div class="sr-mat-icon">
+                  {% if product.category == 'cement' %}🪨
+                  {% elif product.category == 'steel' %}⚙️
+                  {% elif product.category == 'brick' %}🧱
+                  {% elif product.category == 'sand' %}🏖️
+                  {% elif product.category == 'tile' %}🔲
+                  {% elif product.category == 'paint' %}🎨
+                  {% elif product.category == 'waterproofing' %}💧
+                  {% else %}📦{% endif %}
+                </div>
+                <div class="sr-mat-info">
+                  <div class="sr-mat-name">{{ product.name }}</div>
+                  <div class="sr-mat-meta">
+                    <span>{{ product.get_category_display }}</span>
+                    <span class="sr-mat-sep">·</span>
+                    <span>{{ product.brand }}</span>
+                  </div>
+                  <div class="sr-mat-price">₹{{ product.price|floatformat:0 }}<small style="font-weight:500;color:#94a3b8;font-size:.72rem;">/{{ product.unit }}</small></div>
+                </div>
+              </a>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- ── Contractors ── -->
+          {% if contractors %}
+          <div class="sr-section">
+            <div class="sr-section-head">
+              <div class="sr-section-icon sr-section-icon--people">👷</div>
+              <h2 class="sr-section-title">Contractors</h2>
+              <span class="sr-section-count">{{ contractors|length }} found</span>
+            </div>
+            <div class="sr-providers-grid">
+              {% for profile in contractors %}
+              <a href="{% url 'public_profile' profile.user.id %}" class="sr-provider-card">
+                <div class="sr-avatar sr-avatar--contractor">{{ profile.business_name|first|upper }}</div>
+                <div class="sr-provider-info">
+                  <div class="sr-provider-name">{{ profile.business_name }}</div>
+                  <div class="sr-provider-meta">
+                    <span>{{ profile.years_of_experience }} yrs exp</span>
+                    <span class="sr-mat-sep">·</span>
+                    <span>{{ profile.total_projects_completed }} projects</span>
+                  </div>
+                  <span class="sr-provider-badge">✓ Verified</span>
+                </div>
+              </a>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- ── Architects ── -->
+          {% if architects %}
+          <div class="sr-section">
+            <div class="sr-section-head">
+              <div class="sr-section-icon sr-section-icon--people">🏛️</div>
+              <h2 class="sr-section-title">Architects</h2>
+              <span class="sr-section-count">{{ architects|length }} found</span>
+            </div>
+            <div class="sr-providers-grid">
+              {% for profile in architects %}
+              <a href="{% url 'public_profile' profile.user.id %}" class="sr-provider-card">
+                <div class="sr-avatar sr-avatar--architect">{{ profile.business_name|first|upper }}</div>
+                <div class="sr-provider-info">
+                  <div class="sr-provider-name">{{ profile.business_name }}</div>
+                  <div class="sr-provider-meta">
+                    <span>{{ profile.years_of_experience }} yrs exp</span>
+                    <span class="sr-mat-sep">·</span>
+                    <span>{{ profile.total_projects_completed }} projects</span>
+                  </div>
+                  <span class="sr-provider-badge">✓ Verified</span>
+                </div>
+              </a>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- ── Designers ── -->
+          {% if designers %}
+          <div class="sr-section">
+            <div class="sr-section-head">
+              <div class="sr-section-icon sr-section-icon--people">🛋️</div>
+              <h2 class="sr-section-title">Interior Designers</h2>
+              <span class="sr-section-count">{{ designers|length }} found</span>
+            </div>
+            <div class="sr-providers-grid">
+              {% for profile in designers %}
+              <a href="{% url 'public_profile' profile.user.id %}" class="sr-provider-card">
+                <div class="sr-avatar sr-avatar--designer">{{ profile.business_name|first|upper }}</div>
+                <div class="sr-provider-info">
+                  <div class="sr-provider-name">{{ profile.business_name }}</div>
+                  <div class="sr-provider-meta">
+                    <span>{{ profile.years_of_experience }} yrs exp</span>
+                    <span class="sr-mat-sep">·</span>
+                    <span>{{ profile.total_projects_completed }} projects</span>
+                  </div>
+                  <span class="sr-provider-badge">✓ Verified</span>
+                </div>
+              </a>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+        {% endif %}
+
+      {% else %}
+      <!-- ── No query yet — show prompt ── -->
+      <div class="sr-prompt">
+        <div class="sr-prompt-icon">🔍</div>
+        <h2 class="sr-prompt-title">What are you looking for?</h2>
+        <p class="sr-prompt-sub">
+          Search across 30+ construction materials, verified contractors, architects, and interior designers across Kerala.
+        </p>
+        <div class="sr-prompt-chips">
+          <a href="{% url 'search' %}?q=cement" class="sr-prompt-chip">Cement</a>
+          <a href="{% url 'search' %}?q=steel" class="sr-prompt-chip">Steel</a>
+          <a href="{% url 'search' %}?q=contractor" class="sr-prompt-chip">Contractors</a>
+          <a href="{% url 'search' %}?q=architect" class="sr-prompt-chip">Architects</a>
+          <a href="{% url 'search' %}?q=designer" class="sr-prompt-chip">Designers</a>
+          <a href="{% url 'search' %}?q=tile" class="sr-prompt-chip">Tiles</a>
+        </div>
+      </div>
+      {% endif %}
+
+    </div><!-- /sr-results -->
+
+  </div><!-- /sr-body -->
+
+</div><!-- /sr-page -->
+{% endblock %}

@@ -1,0 +1,698 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} — OurHome{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/products.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="detail-page product-detail-page">
+  <div class="container">
+
+    <!-- ═══════════════════════════════════════════
+         BREADCRUMB
+         Home > Materials > Cement > UltraTech OPC 53
+         Preserves climate filter in "Materials" link
+         so the Back button returns to filtered list.
+         ═══════════════════════════════════════════ -->
+    <nav class="breadcrumb">
+      <a href="{% url 'home' %}">Home</a>
+      <span class="bc-sep">›</span>
+      <a href="{% url 'product_list' %}{% if from_climate %}?climate={{ from_climate }}{% endif %}">Materials</a>
+      <span class="bc-sep">›</span>
+      <a href="{% url 'product_list' %}?category={{ product.category }}{% if from_climate %}&climate={{ from_climate }}{% endif %}">{{ product.get_category_display }}</a>
+      <span class="bc-sep">›</span>
+      <span class="bc-current">{{ product.name }}</span>
+    </nav>
+
+    <!-- ═══════════════════════════════════════════
+         CLIMATE ALERT BANNERS
+         These appear at the TOP of the page — before the image —
+         so they're the FIRST thing the user sees on mobile.
+
+         show_climate_warning = came from climate filter + NOT suitable
+         show_climate_success = came from climate filter + IS suitable
+         ═══════════════════════════════════════════ -->
+    {% if show_climate_warning %}
+    <div class="alert-banner alert-warning">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-body">
+        <strong>Not recommended for {{ from_climate_label }} regions</strong>
+        <span>This material may cause structural failure in your climate.
+          Potential repair costs: ₹5–10 lakhs. See verified alternatives below.</span>
+      </div>
+      {% if climate_alternatives %}
+      <a href="#alternatives" class="alert-action">See Alternatives ↓</a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if show_climate_success %}
+    <div class="alert-banner alert-success">
+      <div class="alert-icon">✅</div>
+      <div class="alert-body">
+        <strong>Suitable for {{ from_climate_label }} regions</strong>
+        <span>This material is verified for use in {{ from_climate_label }} climate conditions.</span>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- ═══════════════════════════════════════════
+         PRODUCT HERO
+         Mobile:  image stacked above info
+         Desktop: image left (45%), info right (55%)
+         ═══════════════════════════════════════════ -->
+    <div class="detail-hero">
+
+      <!-- Left: Image Gallery -->
+      <div class="detail-img-wrap">
+        {% with images=product.images.all %}
+        {% if images %}
+
+          <!-- Main display image — swapped by thumbnail clicks -->
+          <div class="gallery-main">
+            <img src="{{ images.0.image_url }}"
+                 alt="{{ images.0.caption|default:product.name }}"
+                 class="detail-img"
+                 id="galleryMain"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <div class="detail-img-placeholder" style="display:none">
+              <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" stroke-width="1.2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>
+              <span style="font-size:13px;color:#9CA3AF;margin-top:8px;">{{ product.get_category_display }}</span>
+            </div>
+          </div>
+
+          <!-- Thumbnail strip — only shown if >1 image -->
+          {% if images|length > 1 %}
+          <div class="gallery-thumbs">
+            {% for img in images %}
+            <img src="{{ img.image_url }}"
+                 alt="{{ img.caption|default:product.name }}"
+                 class="gallery-thumb {% if forloop.first %}thumb-active{% endif %}"
+                 onclick="switchGalleryImage(this, '{{ img.image_url }}', '{{ img.caption|default:product.name|escapejs }}')"
+                 loading="lazy">
+            {% endfor %}
+          </div>
+          {% endif %}
+
+        {% elif product.primary_image %}
+          <img src="{{ product.primary_image.url }}"
+               alt="{{ product.name }}"
+               class="detail-img">
+        {% else %}
+          <div class="detail-img detail-img-placeholder">
+            <span class="placeholder-icon-lg">🏗️</span>
+            <span class="placeholder-cat-lg">{{ product.get_category_display }}</span>
+          </div>
+        {% endif %}
+        {% endwith %}
+      </div>
+
+      <!-- Right: Core info -->
+      <div class="detail-info">
+
+        <div class="detail-tags">
+          <span class="detail-cat-tag">{{ product.get_category_display }}</span>
+          {% if product.subcategory %}
+            <span class="detail-subcat-tag">{{ product.subcategory }}</span>
+          {% endif %}
+          {% if product.is_code %}
+            <span class="detail-iscode-tag">{{ product.is_code }}</span>
+          {% endif %}
+        </div>
+
+        <h1 class="detail-name">{{ product.name }}</h1>
+        <p class="detail-brand">by <strong>{{ product.brand }}</strong>
+          {% if product.manufacturer and product.manufacturer != product.brand %}
+            · Manufactured by {{ product.manufacturer }}
+          {% endif %}
+        </p>
+
+        <!-- Price block -->
+        <div class="detail-price-block">
+          <div class="detail-price-main">
+            <span class="detail-price">₹{{ product.price|floatformat:0 }}</span>
+            <span class="detail-unit">/ {{ product.unit }}</span>
+          </div>
+          {% if product.mrp != product.price %}
+          <div class="detail-mrp-row">
+            <span class="detail-mrp">MRP ₹{{ product.mrp|floatformat:0 }} / {{ product.unit }}</span>
+            <span class="detail-mrp-note">(Legal maximum price. No shop can charge above this.)</span>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Rating summary (from precomputed aggregate) -->
+        {% if product.total_reviews > 0 %}
+        <div class="detail-rating-row">
+          <span class="rating-stars">
+            {% with avg=product.average_rating %}
+              {% if avg >= 4.5 %}★★★★★
+              {% elif avg >= 3.5 %}★★★★☆
+              {% elif avg >= 2.5 %}★★★☆☆
+              {% elif avg >= 1.5 %}★★☆☆☆
+              {% else %}★☆☆☆☆
+              {% endif %}
+            {% endwith %}
+          </span>
+          <span class="rating-avg">{{ product.average_rating }}/5</span>
+          <span class="rating-count">({{ product.total_reviews }} review{{ product.total_reviews|pluralize }})</span>
+        </div>
+        {% endif %}
+
+        <!-- Climate mini-summary (desktop shows quick suitability at a glance) -->
+        <div class="detail-climate-mini">
+          <span class="climate-mini-label">Climate:</span>
+          <div class="climate-mini-chips">
+            {% for badge in product.climate_badges %}
+            <span class="mini-chip-detail {% if badge.suitable %}chip-ok{% else %}chip-bad{% endif %}">
+              {% if badge.suitable %}✓{% else %}✗{% endif %} {{ badge.label }}
+            </span>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Save Material button -->
+        <div class="detail-save-row">
+          {% if user.is_authenticated %}
+            {% include 'products/partials/save_button.html' with product=product is_saved=is_saved %}
+          {% else %}
+            <a href="{% url 'account_login' %}?next={{ request.path }}" class="btn-save btn-save--outline">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              Save Material
+            </a>
+          {% endif %}
+        </div>
+
+        <!-- Where to Buy disclaimer — positioned here so it's visible without scrolling -->
+        <div class="detail-disclaimer">
+          <span class="disclaimer-icon">ℹ️</span>
+          <span><strong>OurHome does not sell materials.</strong> We provide unbiased information only.
+            Visit your local hardware store or contact the manufacturer directly.</span>
+        </div>
+
+      </div><!-- /detail-info -->
+    </div><!-- /detail-hero -->
+
+
+    <!-- ═══════════════════════════════════════════
+         CLIMATE SUITABILITY — THE KILLER FEATURE
+         ═══════════════════════════════════════════
+         This section explains exactly which climates this
+         product is / is NOT suitable for, with reasons.
+
+         Each row is:
+         ✓ green card  — suitable
+         ✗ red card    — not suitable
+
+         The card matching from_climate gets a thicker
+         border to draw the eye to the relevant warning.
+         ═══════════════════════════════════════════ -->
+    <section class="detail-section climate-section">
+      <div class="section-header">
+        <h2 class="section-title">🌡️ Climate Suitability</h2>
+        <p class="section-sub">
+          Using the right material for your climate prevents structural damage
+          and saves lakhs in future repairs. Based on IS codes and construction research.
+        </p>
+      </div>
+
+      <div class="climate-grid">
+        {% for badge in product.climate_badges %}
+        <div class="climate-card {% if badge.suitable %}climate-ok{% else %}climate-bad{% endif %} {% if badge.key == from_climate %}climate-highlighted{% endif %}">
+
+          <div class="climate-card-icon">
+            {% if badge.suitable %}
+              <span class="icon-ok">✓</span>
+            {% else %}
+              <span class="icon-bad">✗</span>
+            {% endif %}
+          </div>
+
+          <div class="climate-card-body">
+            <div class="climate-card-title">{{ badge.label }}</div>
+            <div class="climate-card-regions">{{ badge.description }}</div>
+
+            <!-- Extra consequence text — ONLY for the climate the user is researching
+                 AND only when the product is NOT suitable for it.
+                 This is the "wake-up" moment in the demo. -->
+            {% if badge.key == from_climate and not badge.suitable %}
+            <div class="climate-consequence">
+              ⚠️ Using this material in {{ badge.label }} conditions may cause premature
+              structural failure — cracks in steel reinforcement, concrete spalling,
+              wall deterioration within 5–10 years. Repair cost: ₹5–10 lakhs.
+            </div>
+            {% endif %}
+
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════
+         DESCRIPTION
+         ═══════════════════════════════════════════ -->
+    <section class="detail-section">
+      <h2 class="section-title">About This Product</h2>
+      <div class="detail-description">
+        {{ product.description|linebreaksbr }}
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════
+         TECHNICAL SPECIFICATIONS
+         specifications is a JSONField (Python dict).
+         Template iterates .items() to get key-value pairs.
+         ═══════════════════════════════════════════ -->
+    {% if product.specifications %}
+    <section class="detail-section">
+      <h2 class="section-title">Technical Specifications</h2>
+      <table class="specs-table">
+        <tbody>
+          {% for key, value in product.specifications.items %}
+          <tr>
+            <td class="spec-key">{{ key }}</td>
+            <td class="spec-value">{{ value }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+    {% endif %}
+
+
+    <!-- ═══════════════════════════════════════════
+         REGIONAL AVAILABILITY
+         states_available is a JSONField (Python list).
+         Template iterates it directly.
+         ═══════════════════════════════════════════ -->
+    {% if product.states_available or product.seismic_zone or product.regional_notes %}
+    <section class="detail-section">
+      <h2 class="section-title">Regional Information</h2>
+
+      {% if product.states_available %}
+      <div class="regional-row">
+        <span class="regional-label">Available in:</span>
+        <div class="state-tags">
+          {% for state in product.states_available %}
+          <span class="state-tag">{{ state }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      {% if product.seismic_zone %}
+      <div class="regional-row">
+        <span class="regional-label">Seismic Zone:</span>
+        <span class="seismic-badge">{{ product.get_seismic_zone_display }}</span>
+      </div>
+      {% endif %}
+
+      {% if product.regional_notes %}
+      <div class="regional-notes">{{ product.regional_notes }}</div>
+      {% endif %}
+
+    </section>
+    {% endif %}
+
+
+    <!-- ═══════════════════════════════════════════
+         WHERE TO BUY
+         OurHome is browse-only (no e-commerce).
+         This section makes that clear with a disclaimer.
+         ═══════════════════════════════════════════ -->
+    <section class="detail-section where-to-buy">
+      <h2 class="section-title">Where to Buy</h2>
+      <div class="wtb-box">
+        <div class="wtb-disclaimer">
+          <span class="wtb-icon">🏪</span>
+          <div>
+            <strong>OurHome does not sell or supply materials.</strong>
+            <p>We provide unbiased information to help you make informed decisions.
+               Purchase from your local hardware store or contact the manufacturer.</p>
+          </div>
+        </div>
+        {% if product.manufacturer %}
+        <div class="wtb-mfr">
+          <strong>Manufacturer:</strong> {{ product.manufacturer }}
+        </div>
+        {% endif %}
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════
+         RECOMMENDED ALTERNATIVES
+         Only shown when:
+         - User came with a from_climate filter
+         - Current product is NOT suitable for that climate
+         - We found other products in same category that ARE suitable
+
+         This is the "rescue" section — after showing the warning,
+         we immediately offer the right products.
+         id="alternatives" so the banner's "See Alternatives ↓" link
+         can scroll directly here.
+         ═══════════════════════════════════════════ -->
+    {% if climate_alternatives %}
+    <section class="detail-section alternatives-section" id="alternatives">
+      <div class="alternatives-header">
+        <h2 class="section-title">✓ Recommended for {{ from_climate_label }}</h2>
+        <p class="section-sub">
+          These products from the same category ARE suitable for {{ from_climate_label }} climates.
+        </p>
+      </div>
+      <div class="alt-grid">
+        {% for alt in climate_alternatives %}
+        <a href="{% url 'product_detail' alt.slug %}?from_climate={{ from_climate }}"
+           class="alt-card">
+          {% if alt.primary_image %}
+            <img src="{{ alt.primary_image.url }}" alt="{{ alt.name }}" class="alt-img" loading="lazy">
+          {% else %}
+            <div class="alt-img alt-img-placeholder">🏗️</div>
+          {% endif %}
+          <div class="alt-body">
+            <div class="alt-check">✓ Suitable</div>
+            <div class="alt-name">{{ alt.name }}</div>
+            <div class="alt-brand">{{ alt.brand }}</div>
+            <div class="alt-price">₹{{ alt.price|floatformat:0 }} / {{ alt.unit }}</div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+
+    <!-- ═══════════════════════════════════════════
+         RELATED PRODUCTS
+         Same category, different product, max 4.
+         No climate context here — just browsing.
+         ═══════════════════════════════════════════ -->
+    {% if related_products %}
+    <section class="detail-section">
+      <h2 class="section-title">More {{ product.get_category_display }} Products</h2>
+      <div class="related-grid">
+        {% for rel in related_products %}
+        <a href="{% url 'product_detail' rel.slug %}{% if from_climate %}?from_climate={{ from_climate }}{% endif %}"
+           class="related-card">
+          {% if rel.primary_image_url %}
+            <img src="{{ rel.primary_image_url }}" alt="{{ rel.name }}" class="related-img" loading="lazy">
+          {% elif rel.primary_image %}
+            <img src="{{ rel.primary_image.url }}" alt="{{ rel.name }}" class="related-img" loading="lazy">
+          {% else %}
+            <div class="related-img related-img-placeholder">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>
+            </div>
+          {% endif %}
+          <div class="related-body">
+            <div class="related-name">{{ rel.name }}</div>
+            <div class="related-brand">{{ rel.brand }}</div>
+            <div class="related-price">₹{{ rel.price|floatformat:0 }} / {{ rel.unit }}</div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+
+    <!-- ═══════════════════════════════════════════
+         CUSTOMER REVIEWS
+         ═══════════════════════════════════════════ -->
+    <section class="detail-section" id="reviews">
+      <h2 class="section-title">Customer Reviews</h2>
+
+      {% if reviews %}
+
+        <!-- ── Rating summary bar ── -->
+        <div class="review-summary">
+          <div class="review-summary-score">
+            <span class="review-big-avg">{{ product.average_rating }}</span>
+            <div class="review-stars-lg">
+              {% with avg=product.average_rating %}
+                {% if avg >= 4.5 %}★★★★★
+                {% elif avg >= 3.5 %}★★★★☆
+                {% elif avg >= 2.5 %}★★★☆☆
+                {% elif avg >= 1.5 %}★★☆☆☆
+                {% else %}★☆☆☆☆
+                {% endif %}
+              {% endwith %}
+            </div>
+            <span class="review-count-label">{{ product.total_reviews }} review{{ product.total_reviews|pluralize }}</span>
+          </div>
+
+          {% if rating_bars %}
+          <div class="review-breakdown">
+            {% for bar in rating_bars %}
+            <div class="breakdown-row">
+              <span class="breakdown-label">{{ bar.star }}★</span>
+              <div class="breakdown-bar-wrap">
+                <div class="breakdown-bar" style="width: {{ bar.pct }}%"></div>
+              </div>
+              <span class="breakdown-count">{{ bar.count }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- ── Individual review cards ── -->
+        <div class="reviews-list">
+          {% for review in reviews %}
+          <div class="review-card">
+
+            <div class="review-card-header">
+              <div class="review-header-left">
+                <div class="reviewer-avatar">
+                  {{ review.reviewer_name|slice:":1"|upper }}
+                </div>
+                <div class="reviewer-meta">
+                  <span class="reviewer-name">{{ review.reviewer_name }}</span>
+                  {% if review.location_display %}
+                    <span class="reviewer-location">{{ review.location_display }}</span>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="review-header-right">
+                <span class="reviewer-type-badge {{ review.reviewer_badge.0 }}">
+                  {{ review.reviewer_badge.1 }}
+                </span>
+              </div>
+            </div>
+
+            <div class="review-rating-row">
+              <span class="review-stars">
+                {% for i in "12345" %}
+                  {% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}
+                {% endfor %}
+              </span>
+              <span class="review-title">{{ review.title }}</span>
+            </div>
+
+            {% if review.climate_type %}
+            <div class="review-climate-badge">
+              Used in: {{ review.climate_label }}
+            </div>
+            {% endif %}
+
+            <p class="review-text">{{ review.review_text }}</p>
+
+            {% if review.use_case %}
+            <div class="review-use-case">
+              <span class="use-case-label">Project:</span> {{ review.use_case }}
+            </div>
+            {% endif %}
+
+            {% if review.helpful_count > 0 %}
+            <div class="review-helpful">
+              {{ review.helpful_count }} people found this helpful
+            </div>
+            {% endif %}
+
+          </div>
+          {% endfor %}
+        </div>
+
+      {% else %}
+        <div class="no-reviews">
+          <p>No reviews yet. Be the first to share your experience with this product.</p>
+        </div>
+      {% endif %}
+
+      <!-- ── Write a Review form ── -->
+      {% if user.is_authenticated %}
+        {% if user_has_reviewed %}
+        <p style="color:#6B7280; font-size:0.9rem; margin-top:1.5rem; display:flex; align-items:center; gap:6px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          You have already submitted a review for this product.
+        </p>
+        {% else %}
+        <div id="review-form-section"
+             style="margin-top:2rem; padding:1.5rem; background:#f9fafb;
+                    border-radius:12px; border:1px solid #e5e7eb;">
+          <h3 style="margin:0 0 1.25rem; font-size:1.05rem; font-weight:700; color:#111827;">Write a Review</h3>
+          <form method="POST" action="{% url 'submit_review' product.slug %}">
+            {% csrf_token %}
+
+            <!-- Star Rating Picker -->
+            <div style="margin-bottom:1.1rem;">
+              <label style="display:block; font-size:0.85rem; font-weight:600;
+                             color:#374151; margin-bottom:0.5rem;">Your Rating *</label>
+              <div id="star-picker"
+                   style="display:flex; gap:0.2rem; font-size:2.2rem; cursor:pointer; line-height:1;">
+                {% for i in "12345" %}
+                <span class="rv-star" data-value="{{ forloop.counter }}"
+                      style="color:#d1d5db; transition:color 0.1s; user-select:none;">★</span>
+                {% endfor %}
+              </div>
+              <input type="hidden" name="rating" id="rating-input" value="">
+            </div>
+
+            <!-- Title -->
+            <div style="margin-bottom:1rem;">
+              <label style="display:block; font-size:0.85rem; font-weight:600;
+                             color:#374151; margin-bottom:0.4rem;">Review Title *</label>
+              <input type="text" name="title" maxlength="120" required
+                     placeholder="e.g., Perfect for coastal Kerala construction"
+                     style="width:100%; padding:0.65rem 0.9rem; border:1px solid #d1d5db;
+                            border-radius:8px; font-size:0.9rem; font-family:inherit;
+                            box-sizing:border-box; outline:none;">
+            </div>
+
+            <!-- Review text -->
+            <div style="margin-bottom:1rem;">
+              <label style="display:block; font-size:0.85rem; font-weight:600;
+                             color:#374151; margin-bottom:0.4rem;">Your Review *</label>
+              <textarea name="comment" rows="4" required
+                        placeholder="Share your experience — quality, durability, value for money…"
+                        style="width:100%; padding:0.65rem 0.9rem; border:1px solid #d1d5db;
+                               border-radius:8px; font-size:0.9rem; resize:vertical;
+                               font-family:inherit; box-sizing:border-box; outline:none;"></textarea>
+            </div>
+
+            <!-- Optional fields in 2-col row -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem;">
+              <div>
+                <label style="display:block; font-size:0.85rem; font-weight:600;
+                               color:#374151; margin-bottom:0.4rem;">Your Role</label>
+                <select name="reviewer_type"
+                        style="width:100%; padding:0.65rem 0.9rem; border:1px solid #d1d5db;
+                               border-radius:8px; font-size:0.9rem; font-family:inherit;
+                               box-sizing:border-box; background:#fff;">
+                  <option value="homeowner">Homeowner</option>
+                  <option value="contractor">Contractor</option>
+                  <option value="architect">Architect</option>
+                  <option value="designer">Interior Designer</option>
+                  <option value="engineer">Civil Engineer</option>
+                </select>
+              </div>
+              <div>
+                <label style="display:block; font-size:0.85rem; font-weight:600;
+                               color:#374151; margin-bottom:0.4rem;">Your Climate Zone</label>
+                <select name="climate_type"
+                        style="width:100%; padding:0.65rem 0.9rem; border:1px solid #d1d5db;
+                               border-radius:8px; font-size:0.9rem; font-family:inherit;
+                               box-sizing:border-box; background:#fff;">
+                  <option value="">— Select —</option>
+                  <option value="coastal_humid">Coastal & Humid</option>
+                  <option value="hot_dry">Hot & Dry</option>
+                  <option value="heavy_rainfall">Heavy Rainfall</option>
+                  <option value="cold_hilly">Cold & Hilly</option>
+                  <option value="cyclone_prone">Cyclone-Prone</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Use case (optional) -->
+            <div style="margin-bottom:1.25rem;">
+              <label style="display:block; font-size:0.85rem; font-weight:600;
+                             color:#374151; margin-bottom:0.4rem;">
+                Project Description <span style="font-weight:400; color:#9ca3af;">(optional)</span>
+              </label>
+              <input type="text" name="use_case" maxlength="200"
+                     placeholder="e.g., Foundation of 2-storey house in Kochi"
+                     style="width:100%; padding:0.65rem 0.9rem; border:1px solid #d1d5db;
+                            border-radius:8px; font-size:0.9rem; font-family:inherit;
+                            box-sizing:border-box; outline:none;">
+            </div>
+
+            <button type="submit" id="rv-submit-btn"
+                    style="background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+                           color:#fff; border:none; padding:0.75rem 2rem;
+                           border-radius:8px; font-size:0.95rem; font-weight:700;
+                           cursor:pointer; opacity:0.5; pointer-events:none;"
+                    disabled>
+              Submit Review
+            </button>
+            <p style="margin:0.6rem 0 0; font-size:0.78rem; color:#9ca3af;">
+              Your review will appear immediately on this page.
+            </p>
+          </form>
+        </div>
+        {% endif %}
+      {% else %}
+        <div style="text-align:center; padding:1.5rem; background:#f9fafb;
+                    border-radius:12px; margin-top:1.5rem; border:1px solid #e5e7eb;">
+          <p style="color:#6B7280; margin:0 0 0.75rem; font-size:0.95rem;">Sign in to write a review</p>
+          <a href="{% url 'account_login' %}?next={{ request.path }}"
+             style="display:inline-block; background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+                    color:#fff; text-decoration:none; padding:0.65rem 1.75rem;
+                    border-radius:8px; font-weight:700; font-size:0.9rem;">
+            Sign In to Review
+          </a>
+        </div>
+      {% endif %}
+
+    </section>
+
+  </div><!-- /container -->
+</div><!-- /detail-page -->
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function switchGalleryImage(thumb, url, alt) {
+    const main = document.getElementById('galleryMain');
+    main.src = url;
+    main.alt = alt;
+    document.querySelectorAll('.gallery-thumb').forEach(t => t.classList.remove('thumb-active'));
+    thumb.classList.add('thumb-active');
+}
+
+// ── Star rating picker ──────────────────────────────────────
+(function () {
+    const stars      = document.querySelectorAll('.rv-star');
+    const input      = document.getElementById('rating-input');
+    const submitBtn  = document.getElementById('rv-submit-btn');
+    if (!stars.length) return;  // review form not on this page
+
+    let selected = 0;
+
+    function paint(n) {
+        stars.forEach((s, i) => {
+            s.style.color = i < n ? '#f59e0b' : '#d1d5db';
+        });
+    }
+
+    stars.forEach(star => {
+        star.addEventListener('mouseenter', () => paint(+star.dataset.value));
+        star.addEventListener('mouseleave', () => paint(selected));
+        star.addEventListener('click', () => {
+            selected = +star.dataset.value;
+            input.value = selected;
+            paint(selected);
+            // Enable submit button only after a star is chosen
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            submitBtn.style.pointerEvents = 'auto';
+        });
+    });
+})();
+</script>
+{% endblock %}

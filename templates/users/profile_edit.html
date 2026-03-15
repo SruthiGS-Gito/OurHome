@@ -1,0 +1,185 @@
+<!--
+templates/users/profile_edit.html — Edit Profile Page
+
+HTMX INTEGRATION:
+- The form uses hx-post to submit via AJAX
+- On submit, only the #profile-form div is updated (no full page reload)
+- hx-encoding="multipart/form-data" is needed because we upload files (profile photo)
+- The save/cancel buttons are outside #profile-form so they stay in place on HTMX swap
+-->
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile — OurHome{% endblock %}
+
+{% block content %}
+<div class="pe-page">
+
+    <div class="pf-header-wrap">
+
+    <!-- Banner — custom image if uploaded, gradient fallback -->
+    <div class="pf-banner"
+         {% if user.banner_image %}
+         style="background-image:url('{{ user.banner_image.url }}');
+                background-size:cover;background-position:center;background-repeat:no-repeat;"
+         {% elif user.service_provider_profile.banner_image %}
+         style="background-image:url('{{ user.service_provider_profile.banner_image.url }}');
+                background-size:cover;background-position:center;background-repeat:no-repeat;"
+         {% endif %}>
+        <div class="pe-header-overlay"></div>
+    </div>
+
+    <!-- Info row: avatar (overlaps banner) + Edit Profile title + email -->
+    <div class="pf-info-bar">
+        <div class="pf-info-bar-inner">
+
+            <!-- Avatar — click to change photo -->
+            <div class="pf-avatar-wrap"
+                 id="hero-avatar-wrap"
+                 style="margin-top:-5px;position:relative;z-index:10;cursor:pointer;"
+                 onclick="document.getElementById('id_profile_photo').click()"
+                 onmouseenter="document.getElementById('hero-cam-overlay').style.opacity='1'"
+                 onmouseleave="document.getElementById('hero-cam-overlay').style.opacity='0'"
+                 title="Click to change photo">
+
+                {% if user.profile_photo %}
+                    <img id="hero-avatar-img"
+                         src="{{ user.profile_photo.url }}"
+                         style="width:100%;height:100%;object-fit:cover;display:block;
+                                border-radius:50%;transition:transform 0.2s ease;">
+                {% else %}
+                    <span id="hero-avatar-initials">
+                        {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                    </span>
+                {% endif %}
+
+                <!-- Camera overlay on hover -->
+                <div id="hero-cam-overlay"
+                     style="position:absolute;inset:0;border-radius:50%;
+                            background:rgba(0,0,0,0.50);
+                            display:flex;flex-direction:column;
+                            align-items:center;justify-content:center;
+                            opacity:0;transition:opacity 0.2s ease;
+                            color:white;gap:3px;pointer-events:none;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                        <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                    <span style="font-size:0.55rem;font-weight:700;
+                                 letter-spacing:0.5px;text-transform:uppercase;">
+                        Change
+                    </span>
+                </div>
+
+            </div><!-- /pf-avatar-wrap -->
+
+            <!-- Edit Profile title + email -->
+            <div style="flex:1;min-width:0;padding-left:16px;">
+                <h1 style="margin:0;font-size:24px;font-weight:700;color:#1a1a1a;line-height:1.2;">
+                    Edit Profile
+                </h1>
+                <p style="margin:4px 0 0;color:#666;font-size:14px;">{{ user.email }}</p>
+            </div>
+
+            <!-- Back to profile link -->
+            <div style="flex-shrink:0;margin-left:auto;align-self:center;padding-left:20px;">
+                <a href="{% url 'profile' %}"
+                   style="padding:10px 22px;background:var(--gray-100);color:var(--gray-700);
+                          border-radius:10px;font-size:14px;font-weight:600;
+                          text-decoration:none;white-space:nowrap;display:inline-block;">
+                    ← Back
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    </div><!-- /pf-header-wrap -->
+
+    <script>
+    /* Live preview — uses event delegation so it survives HTMX swaps of #profile-form */
+    document.addEventListener('change', function (e) {
+        if (!e.target || e.target.id !== 'id_profile_photo') return;
+        var file = e.target.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function (ev) {
+            var wrap = document.getElementById('hero-avatar-wrap');
+            var img  = document.getElementById('hero-avatar-img');
+            if (!img) {
+                /* First upload — replace initials span with an <img> */
+                img = document.createElement('img');
+                img.id = 'hero-avatar-img';
+                img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+                var initials = document.getElementById('hero-avatar-initials');
+                if (initials) {
+                    initials.replaceWith(img);
+                } else {
+                    wrap.insertBefore(img, wrap.firstChild);
+                }
+            }
+            img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+    </script>
+
+    <script>
+    /* Cover photo drag-drop + live preview */
+    function peBannerDrop(e) {
+        e.preventDefault();
+        document.getElementById('peBannerDropzone').classList.remove('pe-banner-dropzone--over');
+        var file = e.dataTransfer.files[0];
+        if (!file) return;
+        try {
+            var dt = new DataTransfer();
+            dt.items.add(file);
+            document.getElementById('id_banner_image').files = dt.files;
+        } catch(err) {}
+        peBannerPreview(file);
+    }
+    document.addEventListener('change', function (e) {
+        if (!e.target || e.target.id !== 'id_banner_image') return;
+        if (e.target.files[0]) peBannerPreview(e.target.files[0]);
+    });
+    function peBannerPreview(file) {
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File too large — maximum 5 MB.');
+            return;
+        }
+        var reader = new FileReader();
+        reader.onload = function (ev) {
+            var current = document.getElementById('pe-banner-current');
+            var img     = document.getElementById('pe-banner-preview-img');
+            img.src = ev.target.result;
+            current.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+    </script>
+
+    <!-- Content body -->
+    <div class="pe-body" style="margin-top:0;padding-top:16px;">
+        <form method="POST" enctype="multipart/form-data"
+              hx-post="{% url 'profile_edit' %}"
+              hx-target="#profile-form"
+              hx-swap="innerHTML"
+              hx-encoding="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- HTMX target: only this section is replaced on submit -->
+            <div id="profile-form">
+                {% include 'users/partials/profile_form.html' %}
+            </div>
+
+            <!-- Action buttons stay in place (outside #profile-form) -->
+            <div class="pe-actions">
+                <button type="submit" class="pe-save-btn">Save Changes</button>
+                <a href="{% url 'profile' %}" class="pe-cancel-link">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+</div>
+{% endblock %}

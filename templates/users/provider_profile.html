@@ -1,0 +1,517 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ provider_profile.business_name }} — OurHome{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/directory.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="pp-page">
+
+  <!-- ══════════════════════════════════════════════════════════════
+       LINKEDIN-STYLE BANNER + HERO ROW
+       ══════════════════════════════════════════════════════════════ -->
+
+  <div class="lh-header-wrap">
+
+  <!-- Banner: constrained width, gradient or image -->
+  <div class="lh-banner">
+    {% if provider_profile.banner_image %}
+      <img src="{{ provider_profile.banner_image.url }}" alt="Banner" class="lh-banner-img">
+    {% else %}
+      <div class="lh-banner-default lh-banner-{{ profile_user.user_type }}"></div>
+    {% endif %}
+
+    {% if is_own_profile %}
+    <form method="post" enctype="multipart/form-data" class="lh-banner-upload-form">
+      {% csrf_token %}
+      <input type="hidden" name="_action" value="upload_banner">
+      <label class="lh-banner-edit-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Edit Banner
+        <input type="file" name="banner_image" accept="image/*" style="display:none" onchange="this.form.submit()">
+      </label>
+    </form>
+    {% endif %}
+  </div>
+
+  <!-- Info bar: white row below banner; avatar anchors here with top:-60px -->
+  <div class="lh-info-bar">
+  <div class="lh-info-bar-inner">
+
+    <!-- Avatar — clicking always opens the lightbox for everyone -->
+    <div class="lh-photo-wrap" onclick="openProviderPhotoLightbox()" style="cursor:pointer">
+      {% if profile_user.profile_photo %}
+        <img src="{{ profile_user.profile_photo.url }}"
+             alt="{{ profile_user.full_name }}"
+             class="lh-photo">
+      {% else %}
+        <div class="lh-photo lh-photo-initials">
+          {{ profile_user.first_name|first|upper }}{{ profile_user.last_name|first|upper }}
+        </div>
+      {% endif %}
+
+      {% if is_own_profile %}
+      <form method="post" enctype="multipart/form-data" class="lh-photo-upload-form">
+        {% csrf_token %}
+        <input type="hidden" name="_action" value="upload_photo">
+        <label class="lh-photo-overlay" title="View photo" style="pointer-events:none;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            <line x1="11" y1="8" x2="11" y2="14"/>
+            <line x1="8" y1="11" x2="14" y2="11"/>
+          </svg>
+        </label>
+      </form>
+      {% else %}
+      <!-- Visitor: hover shows a zoom/enlarge indicator — clicking opens the lightbox -->
+      <div class="lh-photo-overlay" title="View photo" style="pointer-events:none;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          <line x1="11" y1="8" x2="11" y2="14"/>
+          <line x1="8" y1="11" x2="14" y2="11"/>
+        </svg>
+      </div>
+      {% endif %}
+
+      {% if provider_profile.is_verified %}
+      <span class="lh-verified-dot" title="Verified by OurHome">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+      </span>
+      {% endif %}
+    </div>
+
+    <!-- Name + role + location + status pill -->
+    <div class="lh-info">
+      <h1 class="lh-name">{{ profile_user.full_name }}</h1>
+      <p class="lh-role">{{ profile_user.get_user_type_display }}
+        {% if provider_profile.business_name %}&nbsp;·&nbsp; {{ provider_profile.business_name }}{% endif %}
+      </p>
+      {% if profile_user.city %}
+      <p class="lh-location">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        {{ profile_user.city }}{% if profile_user.district %}, {{ profile_user.district }}{% endif %}{% if profile_user.state %}, {{ profile_user.state }}{% endif %}
+      </p>
+      {% endif %}
+      {% if provider_profile.is_verified %}
+        <span class="lh-status-pill lh-status-verified">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+          OurHome Verified
+        </span>
+      {% elif provider_profile.verification_status == 'pending' %}
+        <span class="lh-status-pill lh-status-pending">Verification Pending</span>
+      {% endif %}
+    </div>
+
+    <!-- Stats -->
+    <div class="lh-stats">
+      <div class="lh-stat">
+        <span class="lh-stat-num">{{ provider_profile.total_projects_completed }}</span>
+        <span class="lh-stat-label">Projects</span>
+      </div>
+      <div class="lh-stat">
+        <span class="lh-stat-num">{{ provider_profile.years_of_experience }}y</span>
+        <span class="lh-stat-label">Experience</span>
+      </div>
+      {% if provider_profile.price_range_min %}
+      <div class="lh-stat">
+        <span class="lh-stat-num lh-stat-num--sm">{{ provider_profile.price_range_display }}</span>
+        <span class="lh-stat-label">Rate</span>
+      </div>
+      {% endif %}
+      <a href="#contact" class="lh-contact-btn">Contact Now</a>
+    </div>
+
+  </div><!-- /lh-info-bar-inner -->
+  </div><!-- /lh-info-bar -->
+
+  </div><!-- /lh-header-wrap -->
+
+  <!-- ══════════════════════════════════════════════════════════════
+       BODY — two-column on desktop, stacked on mobile
+       LEFT: sidebar (sticky) | RIGHT: main content
+       ══════════════════════════════════════════════════════════════ -->
+  <div class="pp-body">
+    <div class="pp-body-inner">
+
+      <!-- ── LEFT SIDEBAR ────────────────────────────────────────── -->
+      <aside class="pp-sidebar">
+
+        <!-- About -->
+        {% if profile_user.bio %}
+        <div class="pp-side-card">
+          <h2 class="pp-side-title">About</h2>
+          <p class="pp-bio">{{ profile_user.bio }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Specializations -->
+        {% if provider_profile.specializations %}
+        <div class="pp-side-card">
+          <h2 class="pp-side-title">Specializations</h2>
+          <div class="pp-spec-chips">
+            {% for spec in provider_profile.specializations %}
+              <span class="pp-spec-chip">{{ spec }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Contact details -->
+        <div class="pp-side-card">
+          <h2 class="pp-side-title">Contact Info</h2>
+          <div class="pp-contact-list">
+            {% if provider_profile.office_address %}
+            <div class="pp-contact-row">
+              <svg class="pp-contact-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              <span>{{ provider_profile.office_address }}</span>
+            </div>
+            {% endif %}
+            {% if provider_profile.website %}
+            <div class="pp-contact-row">
+              <svg class="pp-contact-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <a href="{{ provider_profile.website }}" target="_blank" rel="noopener">{{ provider_profile.website }}</a>
+            </div>
+            {% endif %}
+            {% if provider_profile.whatsapp_number %}
+            <div class="pp-contact-row">
+              <svg class="pp-contact-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.07 6.07l.9-.9a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              <a href="https://wa.me/{{ provider_profile.whatsapp_number|cut:'+' }}" target="_blank" rel="noopener">{{ provider_profile.whatsapp_number }}</a>
+            </div>
+            {% endif %}
+          </div>
+          <a href="#contact" class="pp-sidebar-anchor">Send Inquiry →</a>
+        </div>
+
+      </aside><!-- /pp-sidebar -->
+
+
+      <!-- ── RIGHT MAIN ──────────────────────────────────────────── -->
+      <main class="pp-main">
+
+        <!-- Portfolio Gallery -->
+        {% if all_portfolio %}
+        <div class="pp-section" id="portfolio">
+          <div class="pp-section-header">
+            <h2 class="pp-section-title">Portfolio</h2>
+            <span class="pp-section-count">{{ all_portfolio|length }} project{{ all_portfolio|length|pluralize }}</span>
+          </div>
+
+          <div class="pp-portfolio-grid">
+            {% for img in all_portfolio %}
+            <div class="pp-portfolio-card"
+                 onclick="openPortfolioModal(this)"
+                 data-title="{{ img.project_title }}"
+                 data-type="{{ img.get_project_type_display }}"
+                 data-location="{{ img.project_location }}"
+                 data-size="{{ img.project_size }}"
+                 data-description="{{ img.project_description }}"
+                 data-date="{% if img.completion_date %}{{ img.completion_date|date:'M Y' }}{% endif %}"
+                 data-img="{{ img.image.url }}">
+
+              <!-- Image section (200px tall) -->
+              <div class="pp-portfolio-img-wrap">
+                <img src="{{ img.image.url }}" alt="{{ img.project_title }}"
+                     class="pp-portfolio-img" loading="lazy">
+                <!-- Hover overlay — title removed; info section below shows it -->
+                <div class="pp-portfolio-overlay">
+                  <div class="pp-portfolio-view-btn">View</div>
+                </div>
+                {% if img.featured %}
+                  <span class="pp-portfolio-badge">Featured</span>
+                {% endif %}
+              </div>
+
+              <!-- Info section below image -->
+              <div class="pp-portfolio-info">
+                <div class="pp-portfolio-title">{{ img.project_title }}</div>
+                <div class="pp-portfolio-type">{{ img.get_project_type_display }}</div>
+                {% if img.project_location %}
+                  <div class="pp-portfolio-location">{{ img.project_location }}</div>
+                {% endif %}
+              </div>
+
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Inquiry Form -->
+        <div class="pp-section" id="contact">
+          <div class="pp-section-header">
+            <h2 class="pp-section-title">Send an Inquiry</h2>
+          </div>
+          <p class="pp-section-sub">
+            Reach out to <strong>{{ provider_profile.business_name }}</strong> directly.
+            Your contact details are kept private and shared only with them.
+          </p>
+
+          {% if inquiry_sent %}
+            <div class="pp-inquiry-success">
+              <div class="pp-inquiry-success-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div>
+                <strong>Inquiry sent successfully!</strong>
+                <p>{{ provider_profile.business_name }} will get back to you within 1–2 business days.</p>
+              </div>
+            </div>
+          {% else %}
+            {% if messages %}
+              {% for msg in messages %}
+                {% if 'error' in msg.tags %}
+                  <div class="pp-inquiry-error">{{ msg }}</div>
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+
+            <form method="post" class="pp-inquiry-form">
+              {% csrf_token %}
+              <div class="pp-form-grid">
+                <div class="pp-field">
+                  <label class="pp-label">Your Name <span class="pp-required">*</span></label>
+                  <input type="text" name="sender_name" class="pp-input" placeholder="Full name" required
+                         value="{% if user.is_authenticated %}{{ user.full_name }}{% endif %}">
+                </div>
+                <div class="pp-field">
+                  <label class="pp-label">Email Address <span class="pp-required">*</span></label>
+                  <input type="email" name="sender_email" class="pp-input" placeholder="your@email.com" required
+                         value="{% if user.is_authenticated %}{{ user.email }}{% endif %}">
+                </div>
+              </div>
+              <div class="pp-field">
+                <label class="pp-label">Phone Number <span class="pp-optional">(optional)</span></label>
+                <input type="tel" name="sender_phone" class="pp-input" placeholder="+91 98765 43210"
+                       value="{% if user.is_authenticated and user.phone %}{{ user.phone }}{% endif %}">
+              </div>
+              <div class="pp-field">
+                <label class="pp-label">Your Message <span class="pp-required">*</span></label>
+                <textarea name="message" class="pp-input pp-textarea" rows="5"
+                          placeholder="Describe your project — location, approximate size, budget range, expected timeline…" required></textarea>
+              </div>
+              <button type="submit" class="pp-submit-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                Send Inquiry
+              </button>
+            </form>
+          {% endif %}
+        </div>
+
+      </main><!-- /pp-main -->
+    </div><!-- /pp-body-inner -->
+  </div><!-- /pp-body -->
+
+</div><!-- /pp-page -->
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PORTFOLIO MODAL
+     ══════════════════════════════════════════════════════════════ -->
+<div class="pp-modal" id="portfolioModal" onclick="closePortfolioModal()">
+  <div class="pp-modal-inner" onclick="event.stopPropagation()">
+
+    <!-- Close button — overlaid top-right of modal -->
+    <button class="pp-modal-close" onclick="closePortfolioModal()" aria-label="Close">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+
+    <!-- Zoom control bar -->
+    <div class="pp-zoom-bar">
+      <button class="pp-zoom-btn" id="zoomOut" onclick="modalZoom(-0.25)" aria-label="Zoom out">−</button>
+      <span class="pp-zoom-pct" id="zoomPct">100%</span>
+      <button class="pp-zoom-btn" id="zoomIn"  onclick="modalZoom(+0.25)" aria-label="Zoom in">+</button>
+    </div>
+
+    <!-- Image container: overflow hidden keeps zoomed img inside modal -->
+    <div class="pp-img-viewport" id="imgViewport">
+      <img id="modalImg" src="" alt="" class="pp-modal-img">
+    </div>
+
+    <div class="pp-modal-body">
+      <h3 id="modalTitle" class="pp-modal-title"></h3>
+      <div class="pp-modal-meta">
+        <span id="modalType" class="pp-modal-tag"></span>
+        <span id="modalLocation"></span>
+        <span id="modalDate"></span>
+      </div>
+      <p id="modalDesc" class="pp-modal-desc"></p>
+      <p id="modalSize" class="pp-modal-size"></p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Provider photo lightbox ───────────────────────────────── -->
+<div id="providerPhotoLightbox"
+     style="display:none; position:fixed; inset:0; z-index:9999;
+            background:rgba(0,0,0,0.85);
+            align-items:center; justify-content:center;
+            cursor:zoom-out;"
+     onclick="closeProviderPhotoLightbox()">
+  <div style="position:relative;" onclick="event.stopPropagation()">
+    {% if profile_user.profile_photo %}
+      <img src="{{ profile_user.profile_photo.url }}"
+           alt="{{ profile_user.full_name }}"
+           style="width:min(400px,85vw); height:min(400px,85vw);
+                  border-radius:50%; object-fit:cover;
+                  border:4px solid white;
+                  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+                  display:block;">
+    {% else %}
+      <div style="width:min(400px,85vw); height:min(400px,85vw);
+                  border-radius:50%; border:4px solid white;
+                  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+                  background:linear-gradient(135deg,#FC2779,#7C3AED);
+                  display:flex; align-items:center; justify-content:center;
+                  font-size:5rem; font-weight:700; color:white;">
+        {{ profile_user.first_name|first|upper }}{{ profile_user.last_name|first|upper }}
+      </div>
+    {% endif %}
+    <button onclick="closeProviderPhotoLightbox()"
+            style="position:absolute; top:-14px; right:-14px;
+                   width:34px; height:34px; border-radius:50%;
+                   background:#e91e8c; color:white; border:none;
+                   font-size:16px; font-weight:700; cursor:pointer;
+                   display:flex; align-items:center; justify-content:center;
+                   box-shadow:0 2px 10px rgba(0,0,0,0.3); line-height:1;">✕</button>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openProviderPhotoLightbox() {
+  const lb = document.getElementById('providerPhotoLightbox');
+  lb.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeProviderPhotoLightbox() {
+  const lb = document.getElementById('providerPhotoLightbox');
+  lb.style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+/* ── Portfolio modal ─────────────────────────────────────────── */
+var _zoom = 1, _panY = 0;
+var _dragging = false, _dragStartY = 0, _panStartY = 0;
+var _pinchDist = 0;
+
+function _applyZoom() {
+    var img = document.getElementById('modalImg');
+    var pct = document.getElementById('zoomPct');
+    /* Clamp vertical pan: image can only move as far as the zoom-added height allows.
+       At scale _zoom, each edge extends (imgH * (_zoom-1) / 2) px beyond the viewport. */
+    var maxPanY = img.clientHeight * (_zoom - 1) / 2;
+    _panY = Math.max(-maxPanY, Math.min(maxPanY, _panY));
+    img.style.transform = 'scale(' + _zoom + ') translateY(' + _panY/_zoom + 'px)';
+    img.style.cursor = _zoom > 1 ? 'grab' : 'zoom-in';
+    pct.textContent = Math.round(_zoom * 100) + '%';
+    document.getElementById('zoomOut').disabled = _zoom <= 0.5;
+    document.getElementById('zoomIn').disabled  = _zoom >= 3;
+}
+
+function _resetZoom() {
+    _zoom = 1; _panY = 0;
+    _applyZoom();
+}
+
+function modalZoom(delta) {
+    _zoom = Math.min(3, Math.max(0.5, _zoom + delta));
+    /* clamp pan so image doesn't drift off-screen when zooming out */
+    if (_zoom === 1) { _panY = 0; }
+    _applyZoom();
+}
+
+function openPortfolioModal(card) {
+    var img = document.getElementById('modalImg');
+    img.src = card.getAttribute('data-img') || '';
+    img.alt = card.getAttribute('data-title') || '';
+
+    document.getElementById('modalTitle').textContent    = card.getAttribute('data-title') || '';
+    document.getElementById('modalType').textContent     = card.getAttribute('data-type') || '';
+    document.getElementById('modalLocation').textContent = card.getAttribute('data-location') || '';
+    document.getElementById('modalDate').textContent     = card.getAttribute('data-date') || '';
+    document.getElementById('modalDesc').textContent     = card.getAttribute('data-description') || '';
+    var sz = card.getAttribute('data-size');
+    document.getElementById('modalSize').textContent     = sz ? 'Size: ' + sz : '';
+
+    _resetZoom();
+    document.getElementById('portfolioModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closePortfolioModal() {
+    document.getElementById('portfolioModal').classList.remove('open');
+    document.body.style.overflow = '';
+    document.getElementById('modalImg').src = '';
+    _resetZoom();
+}
+
+/* ── Scroll to zoom ──────────────────────────────────────────── */
+document.getElementById('imgViewport').addEventListener('wheel', function(e) {
+    e.preventDefault();
+    modalZoom(e.deltaY < 0 ? 0.1 : -0.1);
+}, { passive: false });
+
+/* ── Mouse drag to pan ───────────────────────────────────────── */
+document.getElementById('imgViewport').addEventListener('mousedown', function(e) {
+    if (_zoom <= 1) return;
+    _dragging = true;
+    _dragStartY = e.clientY;
+    _panStartY  = _panY;
+    document.getElementById('modalImg').style.cursor = 'grabbing';
+    e.preventDefault();
+});
+document.addEventListener('mousemove', function(e) {
+    if (!_dragging) return;
+    _panY = _panStartY + (e.clientY - _dragStartY);
+    _applyZoom();
+});
+document.addEventListener('mouseup', function() {
+    if (_dragging) {
+        _dragging = false;
+        document.getElementById('modalImg').style.cursor = _zoom > 1 ? 'grab' : 'zoom-in';
+    }
+});
+
+/* ── Pinch to zoom (touch) ───────────────────────────────────── */
+document.getElementById('imgViewport').addEventListener('touchstart', function(e) {
+    if (e.touches.length === 2) {
+        _pinchDist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+        );
+    }
+}, { passive: true });
+
+document.getElementById('imgViewport').addEventListener('touchmove', function(e) {
+    if (e.touches.length === 2) {
+        e.preventDefault();
+        var d = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+        );
+        var delta = (d - _pinchDist) * 0.01;
+        _pinchDist = d;
+        _zoom = Math.min(3, Math.max(0.5, _zoom + delta));
+        if (_zoom === 1) { _panY = 0; }
+        _applyZoom();
+    }
+}, { passive: false });
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closePortfolioModal();
+        closeProviderPhotoLightbox();
+    }
+});
+</script>
+{% endblock %}

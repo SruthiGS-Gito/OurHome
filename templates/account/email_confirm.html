@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm Email - OurHome{% endblock %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 120px auto 60px; text-align: center; padding: 40px 24px;">
+    <div style="font-size: 64px; margin-bottom: 20px;">✅</div>
+    <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 12px; color: #111827;">Confirm Your Email</h2>
+
+    {% if confirmation %}
+        <p style="color: #6B7280; font-size: 15px; margin-bottom: 24px;">
+            Please confirm that <strong>{{ confirmation.email_address.email }}</strong> is your email address.
+        </p>
+        <form method="POST" action="{% url 'account_confirm_email' confirmation.key %}">
+            {% csrf_token %}
+            <button type="submit" style="background: linear-gradient(135deg, #FC2779, #D91F63); color: white; padding: 12px 32px; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer;">
+                Confirm Email
+            </button>
+        </form>
+    {% else %}
+        <p style="color: #DC2626; font-size: 15px; margin-bottom: 24px;">
+            This confirmation link is invalid or has expired.
+        </p>
+        <a href="{% url 'account_login' %}" style="color: #FC2779; font-weight: 600; text-decoration: none;">Go to Login</a>
+    {% endif %}
+</div>
+{% endblock %}

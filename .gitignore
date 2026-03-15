@@ -41,3 +41,17 @@ dist/
 build/
 *.egg-info/
 *.egg
+
+# Backup files
+*.bak
+*.backup
+
+# Claude Code (AI assistant config — never push to GitHub)
+.claude/
+
+# Local dev files
+DEMO_CHECKLIST.md
+migrate_to_gemini.py
+patch_gemini_final.py
+fix_ourhome_ui.py
+config/settings.py.bak

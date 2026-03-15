@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 import os
+
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -29,7 +31,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 # Application definition
@@ -41,13 +43,22 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
-    # Registering the apps created
+    'django.contrib.sites',  # Required by django-allauth for multi-site support
+
+    # Third-party apps
+    'allauth',                # Core authentication library
+    'allauth.account',        # Email-based account management (signup, login, verify, reset)
+    'allauth.socialaccount',  # Social login (Google, Facebook) - configured later
+    'django_htmx',            # Detects HTMX requests in views via request.htmx
+    'crispy_forms',           # Renders Django forms as styled HTML automatically
+    'crispy_bootstrap5',      # Bootstrap 5 template pack for crispy-forms
+
+    # Project apps
     'apps.users',
     'apps.products',
-    'apps.shops',
     'apps.contractors',
     'apps.designers',
+    'apps.shops',        # Future Phase 6: "Where to Buy" local shop directory
     'apps.verifier',
     'apps.reviews',
     'apps.reservations',
@@ -61,6 +72,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',  # Required by allauth - handles account state
+    'django_htmx.middleware.HtmxMiddleware',         # Adds request.htmx boolean to every request
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -155,14 +168,63 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media' # Added for media files
 
 # Default primary key field type
-# DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom User Model
-AUTH_USER_MODEL = 'users.User' # Added (we'll create it next)
+AUTH_USER_MODEL = 'users.User'
 
-# LOGIN/LOGOUT URLS
-LOGIN_URL = '/users/login/'
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
+# File upload size limit (5MB)
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5MB - prevents huge file uploads
 
-# Run this command, for any syntax errors : python manage.py check 
+# ============================================================
+# DJANGO-ALLAUTH CONFIGURATION
+# allauth handles: signup, login, logout, email verification,
+# password reset, social login (Google/Facebook)
+# ============================================================
+
+# Required by allauth - identifies which Site object to use
+# After running migrate, go to /admin/sites/site/ and update the domain
+SITE_ID = 1
+
+# Authentication backends - tells Django HOW to verify a user's identity
+# ModelBackend = Django's default (checks username/password against the DB)
+# AuthenticationBackend = allauth's backend (adds email-based auth, social auth)
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+# allauth behavior settings (updated to v65+ format):
+ACCOUNT_LOGIN_BY_CODE_ENABLED = False       # No magic link / code login
+ACCOUNT_LOGIN_METHODS = {'email'}           # Login with email (not username)
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']  # Required signup fields
+ACCOUNT_EMAIL_VERIFICATION = 'none'         # No email verification � log in immediately after signup
+ACCOUNT_USER_MODEL_USERNAME_FIELD = 'username'  # Our User model still has username field
+ACCOUNT_ADAPTER = 'apps.users.adapters.AccountAdapter'  # Our custom adapter (creates username from email)
+ACCOUNT_FORMS = {
+    'signup': 'apps.users.forms.CustomerSignupForm',  # Our custom signup form with phone, name fields
+}
+
+# LOGIN/LOGOUT URLS - now handled by allauth at /accounts/
+LOGIN_URL = '/accounts/login/'         # Where @login_required redirects unauthenticated users
+LOGIN_REDIRECT_URL = '/dashboard/'     # Where to go after successful login
+LOGOUT_REDIRECT_URL = '/'             # Where to go after logout
+ACCOUNT_LOGOUT_REDIRECT_URL = '/'     # allauth's version of the same setting
+
+# Email backend:
+# 'console' prints emails to terminal - perfect for development (you see the verification link)
+# In production, switch to SMTP (Gmail, AWS SES, Mailgun, etc.)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# ============================================================
+# CRISPY FORMS CONFIGURATION
+# Renders Django forms as styled HTML using Bootstrap 5 classes
+# ============================================================
+CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
+
+# ============================================================
+# GROQ API — AI Bill Analyzer
+# Add GROQ_API_KEY=... to your .env file
+# ============================================================
+GROQ_API_KEY = os.getenv('GROQ_API_KEY', '')

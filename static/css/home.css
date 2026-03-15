@@ -69,7 +69,7 @@
     display: flex;
     gap: 12px;
     justify-content: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
 }
 
 /* Default state: transparent with white border */
@@ -78,13 +78,16 @@
 .btn-hero-tertiary {
     background: transparent;
     color: var(--white);
-    padding: 16px 32px;
+    padding: 16px 20px;
     border-radius: 14px;
     font-weight: 700;
-    font-size: 17px;
+    font-size: 15px;
     border: 2px solid var(--white);
     transition: all 0.3s ease;
     text-decoration: none;
+    white-space: nowrap;
+    min-width: 180px;
+    text-align: center;
 }
 
 /* Hover state: white background with primary color text */
@@ -101,6 +104,90 @@
 .btn-hero-tertiary {
     padding: 16px 28px;
     font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════
+   CLIMATE SELECTOR — the demo entry point
+   ═══════════════════════════════════════════ */
+
+.climate-selector {
+  padding: 72px 0;
+  background: linear-gradient(180deg, #fdf4ff 0%, #fff 100%);
+  border-top: 1px solid var(--gray-200);
+}
+
+.climate-selector-header {
+  text-align: center;
+  max-width: 680px;
+  margin: 0 auto 48px;
+}
+
+.climate-selector-header h2 {
+  font-size: 36px;
+  font-weight: 900;
+  color: var(--black);
+  margin-bottom: 16px;
+}
+
+.climate-selector-header p {
+  font-size: 17px;
+  color: var(--gray-600);
+  line-height: 1.6;
+}
+
+.climate-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+}
+
+.climate-home-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px 16px 24px;
+  background: var(--white);
+  border: 2px solid var(--gray-200);
+  border-radius: 20px;
+  text-decoration: none;
+  color: var(--gray-900);
+  transition: all 0.25s ease;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+}
+
+.climate-home-card:hover {
+  border-color: var(--primary);
+  background: linear-gradient(135deg, rgba(252,39,121,0.06) 0%, rgba(124,58,237,0.06) 100%);
+  transform: translateY(-6px);
+  box-shadow: 0 12px 32px rgba(252, 39, 121, 0.18);
+}
+
+.climate-home-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 4px;
+  color: var(--primary);
+}
+
+.climate-home-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--black);
+}
+
+.climate-home-regions {
+  font-size: 12px;
+  color: var(--gray-500);
+  line-height: 1.4;
+}
+
+.climate-home-count {
+  margin-top: auto;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
 }
 
 /* Quick Categories - FIXED ALIGNMENT */
@@ -143,6 +230,7 @@
     text-decoration: none;
     color: var(--gray-900);
     min-height: 160px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
 }
 
 .quick-cat-card:hover {
@@ -153,8 +241,10 @@
 }
 
 .quick-cat-icon {
-    font-size: 48px;
+    width: 44px;
+    height: 44px;
     margin-bottom: 4px;
+    color: var(--primary);
 }
 
 .quick-cat-card span {
@@ -162,6 +252,36 @@
     font-size: 15px;
     text-align: center;
     line-height: 1.3;
+}
+
+/* ─── Shared section header (title + "View All" link) ── */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 28px;
+  gap: 16px;
+}
+
+.section-header h2 {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--black);
+  margin: 0;
+}
+
+.view-all {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary);
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+
+.view-all:hover {
+  color: var(--primary-dark);
 }
 
 /* Products Section */
@@ -183,6 +303,9 @@
     overflow: hidden;
     transition: all 0.3s ease;
     cursor: pointer;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .product-card:hover {
@@ -194,8 +317,8 @@
 .product-image-wrapper {
     position: relative;
     width: 100%;
-    height: 280px;
-    background: var(--gray-50);
+    height: 220px;
+    background: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -214,11 +337,10 @@
     left: 12px;
     background: var(--primary);
     color: var(--white);
-    padding: 6px 12px;
-    border-radius: 8px;
+    padding: 4px 10px;
+    border-radius: 4px;
     font-size: 12px;
     font-weight: 700;
-    text-transform: uppercase;
 }
 
 .product-badge.new {
@@ -232,6 +354,9 @@
 
 .product-info {
     padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .product-info h3 {
@@ -240,6 +365,9 @@
     color: var(--black);
     margin-bottom: 8px;
     line-height: 1.4;
+    /* Always reserve 2 lines — price stays at the same vertical
+       position regardless of whether the name wraps or not */
+    min-height: 2.8em;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -301,11 +429,44 @@
     font-size: 15px;
     cursor: pointer;
     transition: all 0.3s ease;
+    margin-top: auto;
 }
 
 .btn-add-cart:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(252, 39, 121, 0.3);
+}
+
+/* Product card link wrapper — fills grid cell and passes height to card */
+.product-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Image placeholder for products without a photo */
+.home-card-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #f3e8ff 0%, #fce7f3 100%);
+}
+
+.home-placeholder-icon {
+  font-size: 52px;
+}
+
+.home-placeholder-cat {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 /* Featured Banner */
@@ -354,20 +515,23 @@
 }
 
 .banner-icon {
-    font-size: 120px;
+    width: 120px;
+    height: 120px;
     opacity: 0.9;
+    color: rgba(255,255,255,0.85);
 }
 
 /* Contractors Section */
 .contractors-section {
-    padding: 80px 0;
+    padding: 80px 0 48px;
     background: var(--gray-50);
 }
 
 .contractor-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(4, 1fr);
+    align-items: stretch;
+    gap: 20px;
 }
 
 .contractor-card {
@@ -376,6 +540,10 @@
     border-radius: 16px;
     padding: 24px;
     transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
 }
 
 .contractor-card:hover {
@@ -385,10 +553,15 @@
 }
 
 .contractor-header {
+    height: 140px;
+    margin: -24px -24px 16px -24px;
+    padding: 12px 16px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
+    align-items: flex-end;
+    background: linear-gradient(135deg, #FC2779 0%, #7C3AED 100%);
+    background-size: cover;
+    background-position: center;
 }
 
 /* Contractor Avatar with Image Support */
@@ -420,8 +593,8 @@
     font-size: 24px;
 }
 
-/* Designer Avatar with Different Color */
-.designer-avatar-wrapper .contractor-avatar {
+/* Designer Avatar — orange gradient */
+.designer-avatar {
     background: linear-gradient(135deg, #FF6B35, #FFC947) !important;
 }
 
@@ -459,8 +632,11 @@
 .contractor-tags {
     display: flex;
     gap: 8px;
-    margin-bottom: 16px;
     flex-wrap: wrap;
+    flex: 1;
+    min-height: 0;
+    align-content: flex-start;
+    margin-bottom: 0;
 }
 
 .tag {
@@ -476,29 +652,39 @@
     font-size: 20px;
     font-weight: 800;
     color: var(--black);
-    margin-bottom: 16px;
+    margin-top: auto;
+    padding-top: 12px;
+    margin-bottom: 0;
 }
 
 .btn-contractor-contact {
+    display: block;
     width: 100%;
-    background: var(--white);
-    color: var(--primary);
-    border: 2px solid var(--primary);
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: var(--white);
+    border: none;
     padding: 12px;
     border-radius: 10px;
     font-weight: 700;
+    font-size: 15px;
     cursor: pointer;
     transition: all 0.3s ease;
+    margin-top: 12px;
+    flex-shrink: 0;
+    text-decoration: none;
+    text-align: center;
+    box-sizing: border-box;
 }
 
 .btn-contractor-contact:hover {
-    background: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(252, 39, 121, 0.3);
     color: var(--white);
 }
 
 /* Designers Section */
 .designers-section {
-    padding: 80px 0;
+    padding: 48px 0 48px;
     background: var(--white);
 }
 
@@ -568,65 +754,87 @@
     box-shadow: 0 6px 16px rgba(252, 39, 121, 0.3);
 }
 
-/* Responsive for Categories */
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════ */
+
 @media (max-width: 1200px) {
-    .category-scroll {
-        grid-template-columns: repeat(4, 1fr);
-    }
+  .climate-cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .category-scroll {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 @media (max-width: 1024px) {
-    .contractor-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
+  .contractor-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .climate-cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 @media (max-width: 768px) {
-    .hero h1 {
-        font-size: 40px;
-    }
-    
-    .hero p {
-        font-size: 18px;
-    }
-    
-    .hero-actions {
-        flex-direction: column;
-        width: 100%;
-    }
-    
-    .btn-hero-primary,
-    .btn-hero-secondary,
-    .btn-hero-tertiary {
-        width: 100%;
-    }
-    
-    .category-scroll {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 16px;
-    }
-    
-    .quick-cat-card {
-        padding: 24px 16px;
-        min-height: 140px;
-    }
+  .hero h1 {
+    font-size: 40px;
+  }
+  .hero p {
+    font-size: 18px;
+  }
+  .hero-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .btn-hero-primary,
+  .btn-hero-secondary,
+  .btn-hero-tertiary {
+    width: 100%;
+    text-align: center;
+  }
+  .climate-selector-header h2 {
+    font-size: 28px;
+  }
+  .climate-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  .climate-home-card {
+    padding: 24px 12px 20px;
+  }
+  .climate-home-emoji {
+    font-size: 36px;
+  }
+  .category-scroll {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .quick-cat-card {
+    padding: 24px 16px;
+    min-height: 140px;
+  }
 }
 
-@media (max-width: 640px) {
-    .contractor-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .product-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .banner-content {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .banner-icon {
-        font-size: 80px;
-    }
+@media (max-width: 480px) {
+  .contractor-grid {
+    grid-template-columns: 1fr;
+  }
+  .product-grid {
+    grid-template-columns: 1fr;
+  }
+  .banner-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  .banner-icon {
+    font-size: 80px;
+  }
+  .climate-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .climate-home-card {
+    padding: 20px 10px 16px;
+  }
 }

@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}Verify Your Email - OurHome{% endblock %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 120px auto 60px; text-align: center; padding: 40px 24px;">
+    <div style="font-size: 64px; margin-bottom: 20px;">📧</div>
+    <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 12px; color: #111827;">Check Your Email</h2>
+    <p style="color: #6B7280; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
+        We've sent a verification link to your email address.
+        Please click the link to verify your account.
+    </p>
+    <p style="color: #9CA3AF; font-size: 13px;">
+        Didn't receive the email? Check your spam folder or
+        <a href="{% url 'account_login' %}" style="color: #FC2779; font-weight: 600; text-decoration: none;">try logging in</a>
+        to resend the verification email.
+    </p>
+</div>
+{% endblock %}

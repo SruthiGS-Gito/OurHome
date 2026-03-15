@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Privacy Policy — OurHome{% endblock %}
+{% block content %}
+<div style="max-width:800px;margin:80px auto 120px;padding:0 24px;">
+  <h1 style="font-size:36px;font-weight:900;color:var(--black);margin-bottom:8px;">Privacy Policy</h1>
+  <p style="font-size:13px;color:var(--gray-500);margin-bottom:32px;">Last updated: March 2026 — Prototype version</p>
+
+  <div style="display:flex;flex-direction:column;gap:28px;color:var(--gray-700);line-height:1.7;">
+    <div>
+      <h2 style="font-size:18px;font-weight:700;color:var(--black);margin-bottom:8px;">1. Data We Collect</h2>
+      <p>Account information (name, email, phone), location data for service matching, and contractor quotes uploaded to the AI Analyzer. Uploaded bills are deleted from our servers within 24 hours.</p>
+    </div>
+    <div>
+      <h2 style="font-size:18px;font-weight:700;color:var(--black);margin-bottom:8px;">2. How We Use Your Data</h2>
+      <p>To provide the platform services (materials catalog, directory, AI analyzer), to verify service provider identity, and to improve our recommendations. We do not sell your data to third parties.</p>
+    </div>
+    <div>
+      <h2 style="font-size:18px;font-weight:700;color:var(--black);margin-bottom:8px;">3. Data Security</h2>
+      <p>All data is encrypted in transit (HTTPS) and at rest. Provider verification documents are stored securely and accessible only by our admin team.</p>
+    </div>
+    <div>
+      <h2 style="font-size:18px;font-weight:700;color:var(--black);margin-bottom:8px;">4. Your Rights</h2>
+      <p>You may request deletion of your account and associated data at any time by emailing <a href="mailto:privacy@ourhome.in" style="color:var(--primary);">privacy@ourhome.in</a>.</p>
+    </div>
+    <div>
+      <h2 style="font-size:18px;font-weight:700;color:var(--black);margin-bottom:8px;">5. Contact</h2>
+      <p>For privacy-related questions: <a href="mailto:privacy@ourhome.in" style="color:var(--primary);">privacy@ourhome.in</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}

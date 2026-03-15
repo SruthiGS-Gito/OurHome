@@ -1,0 +1,306 @@
+<!--
+templates/users/partials/profile_form.html — HTMX Partial for Profile Form
+
+THIS IS A "PARTIAL" TEMPLATE:
+- It contains ONLY the form fields (not the full page structure).
+- When HTMX submits the form, the view returns ONLY this partial.
+- HTMX replaces the #profile-form div with this HTML.
+- Result: form updates without reloading the entire page.
+
+VARIABLES:
+- form:          UserProfileForm instance
+- provider_form: ServiceProviderProfileForm instance (only for service providers)
+- success:       True if the form was saved successfully
+-->
+
+<!-- Success / error alerts -->
+{% if success %}
+    <div class="pe-alert pe-alert--success">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+        Profile updated successfully!
+    </div>
+{% endif %}
+
+{% if form.errors or provider_form.errors %}
+    <div class="pe-alert pe-alert--error">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Please fix the errors below before saving.
+    </div>
+{% endif %}
+
+<!-- ── Card 1: Personal Information ─────────────────────────── -->
+<div class="pe-card">
+    <h3 class="pe-card-title">Personal Information</h3>
+
+    <!-- First name + Last name — side by side -->
+    <div class="pe-grid-2">
+        <div class="pe-field">
+            <label class="pe-label" for="{{ form.first_name.id_for_label }}">First Name</label>
+            {{ form.first_name }}
+            {% if form.first_name.errors %}<span class="pe-error">{{ form.first_name.errors.0 }}</span>{% endif %}
+        </div>
+        <div class="pe-field">
+            <label class="pe-label" for="{{ form.last_name.id_for_label }}">Last Name</label>
+            {{ form.last_name }}
+            {% if form.last_name.errors %}<span class="pe-error">{{ form.last_name.errors.0 }}</span>{% endif %}
+        </div>
+    </div>
+
+    <!-- Phone -->
+    <div class="pe-field">
+        <label class="pe-label" for="{{ form.phone.id_for_label }}">Phone Number</label>
+        {{ form.phone }}
+        {% if form.phone.errors %}<span class="pe-error">{{ form.phone.errors.0 }}</span>{% endif %}
+    </div>
+
+    <!-- Date of birth -->
+    <div class="pe-field">
+        <label class="pe-label" for="{{ form.date_of_birth.id_for_label }}">Date of Birth</label>
+        {{ form.date_of_birth }}
+        {% if form.date_of_birth.errors %}<span class="pe-error">{{ form.date_of_birth.errors.0 }}</span>{% endif %}
+    </div>
+
+    <!-- Bio -->
+    <div class="pe-field">
+        <label class="pe-label" for="{{ form.bio.id_for_label }}">Bio</label>
+        {{ form.bio }}
+        <span class="pe-help">A short description that appears on your public profile (max 500 characters).</span>
+        {% if form.bio.errors %}<span class="pe-error">{{ form.bio.errors.0 }}</span>{% endif %}
+    </div>
+
+    {# Profile photo input — UI lives in the hero avatar; this just carries the file value #}
+    {{ form.profile_photo }}
+    {% if form.profile_photo.errors %}
+        <span class="pe-error">{{ form.profile_photo.errors.0 }}</span>
+    {% endif %}
+</div>
+
+<!-- ── Card 2: Location ──────────────────────────────────────── -->
+<div class="pe-card">
+    <h3 class="pe-card-title">Location</h3>
+
+    <div class="pe-grid-2">
+        <div class="pe-field">
+            <label class="pe-label" for="{{ form.city.id_for_label }}">City</label>
+            {{ form.city }}
+            {% if form.city.errors %}<span class="pe-error">{{ form.city.errors.0 }}</span>{% endif %}
+        </div>
+        <div class="pe-field">
+            <label class="pe-label" for="{{ form.district.id_for_label }}">District</label>
+            {{ form.district }}
+            {% if form.district.errors %}<span class="pe-error">{{ form.district.errors.0 }}</span>{% endif %}
+        </div>
+    </div>
+
+    <div class="pe-grid-2">
+        <div class="pe-field">
+            <label class="pe-label" for="{{ form.state.id_for_label }}">State</label>
+            {{ form.state }}
+            {% if form.state.errors %}<span class="pe-error">{{ form.state.errors.0 }}</span>{% endif %}
+        </div>
+        <div class="pe-field">
+            <label class="pe-label" for="{{ form.pincode.id_for_label }}">Pincode</label>
+            {{ form.pincode }}
+            {% if form.pincode.errors %}<span class="pe-error">{{ form.pincode.errors.0 }}</span>{% endif %}
+        </div>
+    </div>
+</div>
+
+{% if not provider_form %}
+<!-- ── Card: Cover Photo (customers) ────────────────────────── -->
+<div class="pe-card">
+    <h3 class="pe-card-title">Cover Photo</h3>
+    <p class="pe-card-desc">This image appears as the banner on your profile page. Recommended: 1400 × 350 px, JPG or PNG.</p>
+
+    <!-- Current banner preview -->
+    {% if form.instance.banner_image %}
+    <div id="pe-banner-current" style="margin-bottom:14px;border-radius:10px;overflow:hidden;height:120px;">
+        <img id="pe-banner-preview-img"
+             src="{{ form.instance.banner_image.url }}"
+             style="width:100%;height:100%;object-fit:cover;display:block;">
+    </div>
+    {% else %}
+    <div id="pe-banner-current" style="display:none;margin-bottom:14px;border-radius:10px;overflow:hidden;height:120px;">
+        <img id="pe-banner-preview-img" src="" style="width:100%;height:100%;object-fit:cover;display:block;">
+    </div>
+    {% endif %}
+
+    <!-- Drop zone -->
+    <div class="pe-banner-dropzone" id="peBannerDropzone"
+         onclick="document.getElementById('id_banner_image').click()"
+         ondragover="event.preventDefault();this.classList.add('pe-banner-dropzone--over')"
+         ondragleave="this.classList.remove('pe-banner-dropzone--over')"
+         ondrop="peBannerDrop(event)">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5">
+            <rect x="3" y="3" width="18" height="14" rx="2"/>
+            <path d="M3 15l4-4 4 4 4-6 4 6"/>
+        </svg>
+        <div style="font-size:14px;font-weight:600;color:#374151;margin-top:10px;">
+            Drop your cover photo here, or <span style="color:#FC2779;">browse</span>
+        </div>
+        <div style="font-size:12px;color:#9CA3AF;margin-top:4px;">JPG · PNG · WEBP &nbsp;·&nbsp; Max 5 MB</div>
+        {{ form.banner_image }}
+    </div>
+    {% if form.banner_image.errors %}
+        <span class="pe-error">{{ form.banner_image.errors.0 }}</span>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if provider_form %}
+<!-- ── Card: Cover Photo (service providers only) ────────────── -->
+<div class="pe-card">
+    <h3 class="pe-card-title">Cover Photo</h3>
+    <p class="pe-card-desc">This image appears as the banner on your public profile page. Recommended: 1400 × 350 px, JPG or PNG.</p>
+
+    <!-- Current banner preview -->
+    {% if provider_form.instance.banner_image %}
+    <div id="pe-banner-current" style="margin-bottom:14px;border-radius:10px;overflow:hidden;height:120px;">
+        <img id="pe-banner-preview-img"
+             src="{{ provider_form.instance.banner_image.url }}"
+             style="width:100%;height:100%;object-fit:cover;display:block;">
+    </div>
+    {% else %}
+    <div id="pe-banner-current" style="display:none;margin-bottom:14px;border-radius:10px;overflow:hidden;height:120px;">
+        <img id="pe-banner-preview-img" src="" style="width:100%;height:100%;object-fit:cover;display:block;">
+    </div>
+    {% endif %}
+
+    <!-- Drop zone -->
+    <div class="pe-banner-dropzone" id="peBannerDropzone"
+         onclick="document.getElementById('{{ provider_form.banner_image.id_for_label }}').click()"
+         ondragover="event.preventDefault();this.classList.add('pe-banner-dropzone--over')"
+         ondragleave="this.classList.remove('pe-banner-dropzone--over')"
+         ondrop="peBannerDrop(event)">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5">
+            <rect x="3" y="3" width="18" height="14" rx="2"/>
+            <path d="M3 15l4-4 4 4 4-6 4 6"/>
+        </svg>
+        <div style="font-size:14px;font-weight:600;color:#374151;margin-top:10px;">
+            Drop your cover photo here, or <span style="color:#FC2779;">browse</span>
+        </div>
+        <div style="font-size:12px;color:#9CA3AF;margin-top:4px;">JPG · PNG · WEBP &nbsp;·&nbsp; Max 5 MB</div>
+        {{ provider_form.banner_image }}
+    </div>
+    {% if provider_form.banner_image.errors %}
+        <span class="pe-error">{{ provider_form.banner_image.errors.0 }}</span>
+    {% endif %}
+</div>
+
+<!-- ── Card 3: Business Information (service providers only) ── -->
+<div class="pe-card">
+    <h3 class="pe-card-title">Business Information</h3>
+
+    <!-- Business name -->
+    <div class="pe-field">
+        <label class="pe-label" for="{{ provider_form.business_name.id_for_label }}">Business Name</label>
+        {{ provider_form.business_name }}
+        {% if provider_form.business_name.errors %}<span class="pe-error">{{ provider_form.business_name.errors.0 }}</span>{% endif %}
+    </div>
+
+    <!-- Experience + Projects — side by side -->
+    <div class="pe-grid-2">
+        <div class="pe-field">
+            <label class="pe-label" for="{{ provider_form.years_of_experience.id_for_label }}">Years of Experience</label>
+            {{ provider_form.years_of_experience }}
+            {% if provider_form.years_of_experience.errors %}<span class="pe-error">{{ provider_form.years_of_experience.errors.0 }}</span>{% endif %}
+        </div>
+        <div class="pe-field">
+            <label class="pe-label" for="{{ provider_form.total_projects_completed.id_for_label }}">Projects Completed</label>
+            {{ provider_form.total_projects_completed }}
+            {% if provider_form.total_projects_completed.errors %}<span class="pe-error">{{ provider_form.total_projects_completed.errors.0 }}</span>{% endif %}
+        </div>
+    </div>
+
+    <!-- Typical duration -->
+    <div class="pe-field">
+        <label class="pe-label" for="{{ provider_form.typical_project_duration.id_for_label }}">Typical Project Duration</label>
+        {{ provider_form.typical_project_duration }}
+        <span class="pe-help">e.g., "6–12 months", "2–4 weeks"</span>
+        {% if provider_form.typical_project_duration.errors %}<span class="pe-error">{{ provider_form.typical_project_duration.errors.0 }}</span>{% endif %}
+    </div>
+
+    <!-- Specializations (JSON list) -->
+    <div class="pe-field">
+        <label class="pe-label" for="{{ provider_form.specializations.id_for_label }}">Specializations</label>
+        {{ provider_form.specializations }}
+        <span class="pe-help">Comma-separated list of codes, e.g., ["residential","eco_friendly"]</span>
+        {% if provider_form.specializations.errors %}<span class="pe-error">{{ provider_form.specializations.errors.0 }}</span>{% endif %}
+    </div>
+</div>
+
+<!-- ── Card 4: Pricing & Contact ─────────────────────────────── -->
+<div class="pe-card">
+    <h3 class="pe-card-title">Pricing &amp; Contact</h3>
+
+    <!-- Price range min + max -->
+    <div class="pe-grid-2">
+        <div class="pe-field">
+            <label class="pe-label" for="{{ provider_form.price_range_min.id_for_label }}">Min Price (₹)</label>
+            {{ provider_form.price_range_min }}
+            {% if provider_form.price_range_min.errors %}<span class="pe-error">{{ provider_form.price_range_min.errors.0 }}</span>{% endif %}
+        </div>
+        <div class="pe-field">
+            <label class="pe-label" for="{{ provider_form.price_range_max.id_for_label }}">Max Price (₹)</label>
+            {{ provider_form.price_range_max }}
+            {% if provider_form.price_range_max.errors %}<span class="pe-error">{{ provider_form.price_range_max.errors.0 }}</span>{% endif %}
+        </div>
+    </div>
+
+    <!-- Price unit -->
+    <div class="pe-field">
+        <label class="pe-label" for="{{ provider_form.price_unit.id_for_label }}">Price Unit</label>
+        {{ provider_form.price_unit }}
+        <span class="pe-help">e.g., "per sqft", "per project"</span>
+        {% if provider_form.price_unit.errors %}<span class="pe-error">{{ provider_form.price_unit.errors.0 }}</span>{% endif %}
+    </div>
+
+    <!-- Office address -->
+    <div class="pe-field">
+        <label class="pe-label" for="{{ provider_form.office_address.id_for_label }}">Office Address</label>
+        {{ provider_form.office_address }}
+        {% if provider_form.office_address.errors %}<span class="pe-error">{{ provider_form.office_address.errors.0 }}</span>{% endif %}
+    </div>
+
+    <!-- Website + WhatsApp — side by side -->
+    <div class="pe-grid-2">
+        <div class="pe-field">
+            <label class="pe-label" for="{{ provider_form.website.id_for_label }}">Website</label>
+            {{ provider_form.website }}
+            {% if provider_form.website.errors %}<span class="pe-error">{{ provider_form.website.errors.0 }}</span>{% endif %}
+        </div>
+        <div class="pe-field">
+            <label class="pe-label" for="{{ provider_form.whatsapp_number.id_for_label }}">WhatsApp Number</label>
+            {{ provider_form.whatsapp_number }}
+            {% if provider_form.whatsapp_number.errors %}<span class="pe-error">{{ provider_form.whatsapp_number.errors.0 }}</span>{% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- ── Card 5: Verification Documents ───────────────────────── -->
+<div class="pe-card">
+    <h3 class="pe-card-title">Verification Documents</h3>
+    <p class="pe-card-desc">Upload these once. OurHome admins review them to grant your verified badge.</p>
+
+    <div class="pe-field">
+        <label class="pe-label" for="{{ provider_form.id_proof.id_for_label }}">Government ID</label>
+        {{ provider_form.id_proof }}
+        <span class="pe-help">Aadhaar card, PAN card, or Passport (PDF or image)</span>
+        {% if provider_form.id_proof.errors %}<span class="pe-error">{{ provider_form.id_proof.errors.0 }}</span>{% endif %}
+    </div>
+
+    <div class="pe-field">
+        <label class="pe-label" for="{{ provider_form.license_document.id_for_label }}">Professional License</label>
+        {{ provider_form.license_document }}
+        <span class="pe-help">Construction license, PWD registration, or professional certificate</span>
+        {% if provider_form.license_document.errors %}<span class="pe-error">{{ provider_form.license_document.errors.0 }}</span>{% endif %}
+    </div>
+
+    <div class="pe-field">
+        <label class="pe-label" for="{{ provider_form.portfolio_document.id_for_label }}">Portfolio Document</label>
+        {{ provider_form.portfolio_document }}
+        <span class="pe-help">PDF with past project photos and details</span>
+        {% if provider_form.portfolio_document.errors %}<span class="pe-error">{{ provider_form.portfolio_document.errors.0 }}</span>{% endif %}
+    </div>
+</div>
+{% endif %}

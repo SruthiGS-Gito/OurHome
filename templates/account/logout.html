@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign Out - OurHome{% endblock %}
+
+{% block content %}
+<div style="max-width: 440px; margin: 120px auto 60px; text-align: center; padding: 40px 24px;">
+    <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 12px; color: #111827;">Sign Out</h2>
+    <p style="color: #6B7280; font-size: 15px; margin-bottom: 24px;">Are you sure you want to sign out?</p>
+    <form method="POST" action="{% url 'account_logout' %}">
+        {% csrf_token %}
+        <button type="submit" style="background: linear-gradient(135deg, #FC2779, #D91F63); color: white; padding: 12px 32px; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; margin-right: 12px;">
+            Sign Out
+        </button>
+        <a href="{% url 'home' %}" style="color: #6B7280; font-size: 15px; font-weight: 600; text-decoration: none;">Cancel</a>
+    </form>
+</div>
+{% endblock %}

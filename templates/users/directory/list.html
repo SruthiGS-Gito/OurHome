@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ provider_type_label }} Directory — OurHome{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/directory.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dir-page">
+
+  <!-- ── Page header ────────────────────────────────────────────── -->
+  <div class="dir-header">
+    <div class="dir-header-inner">
+      <h1 class="dir-title">Find {{ provider_type_label }}</h1>
+      <p class="dir-sub">Verified professionals across Kerala, ready for your project.</p>
+    </div>
+  </div>
+
+  <div class="dir-layout">
+
+    <!-- ── Filters sidebar ──────────────────────────────────────── -->
+    <aside class="dir-sidebar">
+      <form method="get" class="dir-filter-form">
+
+        <div class="filter-group">
+          <label class="filter-label">Location</label>
+          <input type="text" name="city" value="{{ active_city }}"
+                 class="filter-input" placeholder="City, district, or state">
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Experience</label>
+          <div class="chip-group">
+            <label class="chip {% if active_exp == '0-5' %}chip-active{% endif %}">
+              <input type="radio" name="exp" value="0-5" {% if active_exp == '0-5' %}checked{% endif %}>
+              0–5 yrs
+            </label>
+            <label class="chip {% if active_exp == '5-10' %}chip-active{% endif %}">
+              <input type="radio" name="exp" value="5-10" {% if active_exp == '5-10' %}checked{% endif %}>
+              5–10 yrs
+            </label>
+            <label class="chip {% if active_exp == '10-15' %}chip-active{% endif %}">
+              <input type="radio" name="exp" value="10-15" {% if active_exp == '10-15' %}checked{% endif %}>
+              10–15 yrs
+            </label>
+            <label class="chip {% if active_exp == '15+' %}chip-active{% endif %}">
+              <input type="radio" name="exp" value="15+" {% if active_exp == '15+' %}checked{% endif %}>
+              15+ yrs
+            </label>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Specialization</label>
+          <div class="chip-group">
+            <label class="chip {% if active_spec == 'residential' %}chip-active{% endif %}">
+              <input type="radio" name="spec" value="residential" {% if active_spec == 'residential' %}checked{% endif %}>
+              Residential
+            </label>
+            <label class="chip {% if active_spec == 'commercial' %}chip-active{% endif %}">
+              <input type="radio" name="spec" value="commercial" {% if active_spec == 'commercial' %}checked{% endif %}>
+              Commercial
+            </label>
+            <label class="chip {% if active_spec == 'renovation' %}chip-active{% endif %}">
+              <input type="radio" name="spec" value="renovation" {% if active_spec == 'renovation' %}checked{% endif %}>
+              Renovation
+            </label>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Sort by</label>
+          <select name="sort" class="filter-input">
+            <option value="projects" {% if active_sort == 'projects' %}selected{% endif %}>Most projects</option>
+            <option value="experience" {% if active_sort == 'experience' %}selected{% endif %}>Experience</option>
+            <option value="recent" {% if active_sort == 'recent' %}selected{% endif %}>Recently joined</option>
+          </select>
+        </div>
+
+        <button type="submit" class="filter-btn">Apply Filters</button>
+        {% if active_city or active_exp or active_spec %}
+          <a href="?sort={{ active_sort }}" class="filter-clear">Clear filters</a>
+        {% endif %}
+
+      </form>
+    </aside>
+
+    <!-- ── Provider cards grid ──────────────────────────────────── -->
+    <div class="dir-main">
+
+      {% if page_obj %}
+        <div class="providers-grid">
+          {% for provider in page_obj %}
+          {% with profile=provider.service_provider_profile %}
+          <a href="{% if provider_type == 'contractor' %}{% url 'contractor_profile' provider.username %}{% elif provider_type == 'architect' %}{% url 'architect_profile' provider.username %}{% else %}{% url 'designer_profile' provider.username %}{% endif %}"
+             class="provider-card">
+
+            <!-- Mini banner strip at top -->
+            <div class="card-banner banner-{{ provider.user_type }}"
+                 {% if profile.banner_image %}
+                 style="background-image:url('{{ profile.banner_image.url }}');background-size:cover;background-position:center;"
+                 {% endif %}></div>
+
+            <!-- Avatar overlapping banner -->
+            <div class="card-avatar-wrap">
+              {% if provider.profile_photo %}
+                <img src="{{ provider.profile_photo.url }}" alt="{{ profile.business_name }}" class="card-avatar-img">
+              {% else %}
+                <div class="card-avatar">
+                  {% if provider.first_name %}{{ provider.first_name|first|upper }}{{ provider.last_name|first|upper }}{% else %}{{ profile.business_name|first|upper }}{% endif %}
+                </div>
+              {% endif %}
+              {% if profile.is_verified %}
+              <span class="card-verified-dot">✓</span>
+              {% endif %}
+            </div>
+
+            <!-- Card body -->
+            <div class="card-body">
+              <h3 class="card-name">{{ profile.business_name }}</h3>
+              <p class="card-role">{{ provider.get_user_type_display }}</p>
+
+              {% if provider.city or provider.district %}
+              <p class="card-location">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                {% if provider.city and provider.city != provider.district %}{{ provider.city }}, {{ provider.district }}{% else %}{{ provider.district|default:provider.city }}{% endif %}
+              </p>
+              {% endif %}
+
+              <div class="card-stats">
+                <span><strong>{{ profile.years_of_experience }}</strong> yrs exp</span>
+                <span class="stat-dot">·</span>
+                <span><strong>{{ profile.total_projects_completed }}</strong> projects</span>
+              </div>
+
+              {% if profile.price_range_min and profile.price_range_max %}
+              <p class="card-rate">{{ profile.price_range_display }}</p>
+              {% endif %}
+
+              {% if profile.specializations %}
+              <div class="card-tags">
+                {% for spec in profile.specializations|slice:":3" %}
+                <span class="card-tag">{{ spec|title }}</span>
+                {% endfor %}
+              </div>
+              {% endif %}
+
+              <div class="card-cta">View Profile →</div>
+            </div>
+
+          </a>
+          {% endwith %}
+          {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="dir-pagination">
+          {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&city={{ active_city }}&exp={{ active_exp }}&spec={{ active_spec }}&sort={{ active_sort }}" class="page-btn">← Previous</a>
+          {% endif %}
+          <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&city={{ active_city }}&exp={{ active_exp }}&spec={{ active_spec }}&sort={{ active_sort }}" class="page-btn">Next →</a>
+          {% endif %}
+        </div>
+        {% endif %}
+
+      {% else %}
+        <div class="dir-empty">
+          <p>No verified {{ provider_type_label|lower }} found{% if active_city %} in {{ active_city }}{% endif %}.</p>
+          {% if active_city or active_exp or active_spec %}
+            <a href="?sort={{ active_sort }}" class="dir-view-btn" style="margin-top:12px;">Clear filters</a>
+          {% endif %}
+        </div>
+      {% endif %}
+
+    </div><!-- /dir-main -->
+  </div><!-- /dir-layout -->
+</div><!-- /dir-page -->
+{% endblock %}

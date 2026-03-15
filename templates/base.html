@@ -15,10 +15,17 @@
     <!-- Base CSS -->
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     
+    <!-- HTMX — enables dynamic page updates without JavaScript frameworks -->
+    <!-- HOW: Add hx-get/hx-post attributes to HTML elements. HTMX sends AJAX requests
+         and swaps the response HTML into the page. No full page reload needed. -->
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+
     <!-- Page-specific CSS -->
     {% block extra_css %}{% endblock %}
 </head>
-<body>
+<!-- hx-headers: tells HTMX to include the CSRF token with every request.
+     Without this, Django would reject HTMX POST requests as potential attacks. -->
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
     <!-- Navigation -->
     <nav class="navbar" id="navbar">
         <div class="navbar-container">
@@ -27,26 +34,112 @@
                 <span class="logo-text">OurHome</span>
             </a>
             
-            <!-- Search Bar -->
-            <div class="search-wrapper">
-                <input type="text" class="search-input" placeholder="Search materials, contractors, designers...">
-                <button class="search-btn">
+            <!-- Search Bar with HTMX live search -->
+            <!-- form: pressing Enter or clicking the button navigates to /search/?q=…
+                 HTMX keyup live-search fires independently and fills #search-results. -->
+            <form class="search-wrapper" action="{% url 'search' %}" method="get">
+                <!-- hx-get: sends a GET request to /search/ when triggered
+                     hx-trigger: fires after user stops typing for 300ms (debounce)
+                     hx-target: puts the response HTML into #search-results
+                     hx-swap: replaces the innerHTML of the target -->
+                <input type="text" class="search-input" name="q"
+                       placeholder="Search materials, contractors, designers..."
+                       hx-get="{% url 'search' %}"
+                       hx-trigger="keyup changed delay:300ms"
+                       hx-target="#search-results"
+                       hx-swap="innerHTML"
+                       autocomplete="off">
+                <button type="submit" class="search-btn">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                         <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                     </svg>
                 </button>
-            </div>
-            
-            <!-- Main Navigation Links -->
+                <!-- Live search results appear here -->
+                <div id="search-results"></div>
+            </form>
+
+            <!-- Navigation Links — changes based on login state -->
+            <!-- nav-active class highlights the current page's link -->
             <div class="nav-links">
-                <a href="#materials" class="nav-link">Shop Materials</a>
-                <a href="#contractors" class="nav-link">Contractors</a>
-                <a href="#designers" class="nav-link">Designers</a>
-                <a href="#analyzer" class="nav-link">Material Analyzer</a>
-                <a href="{% url 'login' %}" class="nav-signin">Sign In</a>
+                <a href="{% url 'product_list' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'product_list' or request.resolver_match.url_name == 'product_detail' %}nav-active{% endif %}">
+                   Browse Materials</a>
+                <a href="{% url 'contractor_directory' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'contractor_directory' or request.resolver_match.url_name == 'contractor_profile' %}nav-active{% endif %}">Contractors</a>
+                <a href="{% url 'designer_directory' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'designer_directory' or request.resolver_match.url_name == 'designer_profile' %}nav-active{% endif %}">Designers</a>
+                <a href="{% url 'material_analyzer' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'material_analyzer' %}nav-active{% endif %}">Material Analyzer</a>
+
+                {% if user.is_authenticated %}
+                    <div class="user-menu" id="userMenu">
+                        <button class="user-avatar-btn" id="userMenuBtn" type="button">
+                            {% if user.profile_photo %}
+                                <img src="{{ user.profile_photo.url }}"
+                                     class="user-avatar"
+                                     style="object-fit:cover;"
+                                     alt="{{ user.email|first|upper }}">
+                            {% else %}
+                                <span class="user-avatar">{{ user.email|first|upper }}</span>
+                            {% endif %}
+                            <svg class="user-avatar-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none">
+                                <path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                        <div class="user-dropdown" id="userDropdown">
+                            <div class="user-dropdown-header">
+                                <span>{{ user.email }}</span>
+                            </div>
+                            <a href="{% url 'dashboard' %}">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                                Dashboard
+                            </a>
+                            <a href="{% url 'saved_materials' %}">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                                Saved Materials
+                            </a>
+                            <a href="{% url 'profile' %}">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                Profile
+                            </a>
+                            <div class="user-dropdown-divider"></div>
+                            <a href="{% url 'account_logout' %}" class="logout-link">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                                Logout
+                            </a>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="{% url 'account_login' %}" class="nav-signin">Sign In</a>
+                {% endif %}
             </div>
         </div>
     </nav>
+
+    <!-- Toast notifications (Django messages framework) -->
+    {% if messages %}
+    <div id="messages-container"
+         style="position:fixed; top:80px; right:1rem; z-index:9999;
+                display:flex; flex-direction:column; gap:0.5rem;
+                max-width:360px; width:calc(100% - 2rem);">
+      {% for message in messages %}
+      <div style="background:{% if 'error' in message.tags %}#fee2e2{% elif 'warning' in message.tags %}#fff3cd{% else %}#d1fae5{% endif %};
+                  border-radius:8px; padding:0.75rem 1rem;
+                  font-size:0.88rem; color:#1a1a2e;
+                  box-shadow:0 2px 12px rgba(0,0,0,0.12);
+                  border-left:4px solid {% if 'error' in message.tags %}#ef4444{% elif 'warning' in message.tags %}#f59e0b{% else %}#10b981{% endif %};
+                  transition:opacity 0.4s ease;">
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    <script>
+      setTimeout(function() {
+        var el = document.getElementById('messages-container');
+        if (el) { el.style.opacity = '0'; setTimeout(function(){ el.style.display='none'; }, 400); }
+      }, 4000);
+    </script>
+    {% endif %}
 
     <!-- Main Content -->
     <main>
@@ -58,40 +151,40 @@
         <div class="footer-wrapper">
             <div class="footer-content">
                 <div class="footer-section">
-                    <h4>Products</h4>
+                    <h4>Explore</h4>
                     <ul>
-                        <li><a href="#">Shop Materials</a></li>
-                        <li><a href="#">Find Contractors</a></li>
-                        <li><a href="#">Find Designers</a></li>
-                        <li><a href="#">Material Analyzer</a></li>
+                        <li><a href="{% url 'product_list' %}">Browse Materials</a></li>
+                        <li><a href="{% url 'contractor_directory' %}">Find Contractors</a></li>
+                        <li><a href="{% url 'designer_directory' %}">Find Designers</a></li>
+                        <li><a href="{% url 'material_analyzer' %}">Material Analyzer</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-section">
                     <h4>Support</h4>
                     <ul>
-                        <li><a href="#">Help Center</a></li>
-                        <li><a href="#">Contact Us</a></li>
-                        <li><a href="#">FAQs</a></li>
-                        <li><a href="#">Track Order</a></li>
+                        <li><a href="{% url 'search' %}">Search</a></li>
+                        <li><a href="{% url 'contractor_directory' %}">Verified Contractors</a></li>
+                        <li><a href="{% url 'architect_directory' %}">Find Architects</a></li>
+                        <li><a href="{% url 'provider_signup' %}">Join as Provider</a></li>
                     </ul>
                 </div>
                 
                 <div class="footer-section">
                     <h4>Company</h4>
                     <ul>
-                        <li><a href="#">About OurHome</a></li>
+                        <li><a href="{% url 'about' %}">About OurHome</a></li>
                         <li><a href="#">Careers</a></li>
                         <li><a href="#">Press</a></li>
                         <li><a href="#">Blog</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-section">
                     <h4>Legal</h4>
                     <ul>
-                        <li><a href="#">Privacy Policy</a></li>
-                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="{% url 'privacy' %}">Privacy Policy</a></li>
+                        <li><a href="{% url 'terms' %}">Terms of Service</a></li>
                         <li><a href="#">Cookie Policy</a></li>
                         <li><a href="#">Disclaimer</a></li>
                     </ul>
@@ -111,17 +204,20 @@
         // Navbar scroll effect
         let lastScroll = 0;
         const navbar = document.getElementById('navbar');
-        
+
         window.addEventListener('scroll', () => {
             const currentScroll = window.pageYOffset;
-            
+
             if (currentScroll > 100) {
                 navbar.classList.add('scrolled');
             } else {
                 navbar.classList.remove('scrolled');
             }
-            
+
             lastScroll = currentScroll;
+
+            // Close search dropdown on scroll
+            closeSearch();
         });
 
         // Smooth scroll
@@ -137,6 +233,64 @@
                 }
             });
         });
+
+        // ── Search dropdown management ──────────────────
+        const searchWrapper = document.querySelector('.search-wrapper');
+        const searchInput   = document.querySelector('.search-input');
+        const searchResults = document.getElementById('search-results');
+
+        function closeSearch() {
+            searchResults.innerHTML = '';
+        }
+
+        // 1. Click outside the search wrapper → close
+        document.addEventListener('click', function (e) {
+            if (!searchWrapper.contains(e.target)) {
+                closeSearch();
+            }
+        });
+
+        // 2. ESC key → close and unfocus input
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                closeSearch();
+                searchInput.blur();
+            }
+        });
+
+        // 3. Clicking a result link → close immediately before navigation
+        searchResults.addEventListener('click', function (e) {
+            if (e.target.closest('a')) {
+                closeSearch();
+                searchInput.value = '';
+            }
+        });
+
+        // ── User avatar dropdown ─────────────────────────
+        const userMenu    = document.getElementById('userMenu');
+        const userMenuBtn = document.getElementById('userMenuBtn');
+
+        if (userMenuBtn) {
+            // Toggle on button click
+            userMenuBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                userMenu.classList.toggle('open');
+            });
+
+            // Close when clicking outside
+            document.addEventListener('click', function (e) {
+                if (userMenu && !userMenu.contains(e.target)) {
+                    userMenu.classList.remove('open');
+                }
+            });
+
+            // Close on ESC
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    userMenu.classList.remove('open');
+                }
+            });
+        }
     </script>
     
     {% block extra_js %}{% endblock %}

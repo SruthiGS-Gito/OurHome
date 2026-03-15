@@ -1,0 +1,175 @@
+<!--
+templates/users/provider_signup.html — Service Provider Registration
+
+This is a SEPARATE signup page for contractors, architects, and interior designers.
+It collects both account info AND initial business info.
+After signup: verify email → login → complete profile → wait for admin approval.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Provider Registration - OurHome</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+    <style>
+        /* Allow scrolling for this longer form */
+        html, body { overflow: auto; }
+        .auth-form-section { overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <div class="auth-page">
+        <!-- Left Side - Branding -->
+        <div class="auth-brand">
+            <div class="brand-content">
+                <a href="{% url 'home' %}" class="back-home">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Back to Home
+                </a>
+
+                <div class="brand-logo">
+                    <svg class="brand-icon" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                    <h1>OurHome</h1>
+                </div>
+
+                <h2>Grow Your Business<br>With OurHome</h2>
+
+                <div class="brand-features">
+                    <div class="feature-item">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        <span>Get discovered by customers</span>
+                    </div>
+                    <div class="feature-item">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                        <span>Verified professional badge</span>
+                    </div>
+                    <div class="feature-item">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                        </svg>
+                        <span>Build your reputation with reviews</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side - Provider Signup Form -->
+        <div class="auth-form-section">
+            <div class="form-container">
+                <div class="form-header">
+                    <h2>Professional Registration</h2>
+                    <p>Register as a contractor, architect, or designer</p>
+                </div>
+
+                <!-- Consume queued messages (prevents stacking on next page). -->
+                {% for message in messages %}
+                  {% if 'error' in message.tags or 'warning' in message.tags %}
+                  <div style="background:{% if 'error' in message.tags %}#fee2e2{% else %}#fff3cd{% endif %};
+                              border:1px solid {% if 'error' in message.tags %}#fecaca{% else %}#ffc107{% endif %};
+                              border-radius:8px; padding:0.75rem 1rem; margin-bottom:1rem;
+                              color:{% if 'error' in message.tags %}#991b1b{% else %}#856404{% endif %};
+                              font-size:0.9rem;">{{ message }}</div>
+                  {% endif %}
+                {% endfor %}
+
+                {% if form.non_field_errors %}
+                    <div style="padding: 10px; margin-bottom: 12px; border-radius: 8px; font-size: 13px; background: #FEE2E2; color: #991B1B; border: 1px solid #FECACA;">
+                        {% for error in form.non_field_errors %}
+                            <p style="margin: 0;">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <form method="POST" action="{% url 'provider_signup' %}" class="auth-form">
+                    {% csrf_token %}
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="id_first_name">First Name</label>
+                            <input type="text" id="id_first_name" name="first_name" required
+                                   placeholder="First name" value="{{ form.first_name.value|default:'' }}">
+                            {% if form.first_name.errors %}<span style="color:#DC2626;font-size:12px;">{{ form.first_name.errors.0 }}</span>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="id_last_name">Last Name</label>
+                            <input type="text" id="id_last_name" name="last_name" required
+                                   placeholder="Last name" value="{{ form.last_name.value|default:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="id_email">Email Address</label>
+                            <input type="email" id="id_email" name="email" required
+                                   placeholder="you@example.com" value="{{ form.email.value|default:'' }}">
+                            {% if form.email.errors %}<span style="color:#DC2626;font-size:12px;">{{ form.email.errors.0 }}</span>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="id_phone">Phone</label>
+                            <input type="tel" id="id_phone" name="phone" required
+                                   placeholder="+91 98765 43210" value="{{ form.phone.value|default:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="id_user_type">I am a</label>
+                            <select id="id_user_type" name="user_type">
+                                <option value="contractor">Contractor</option>
+                                <option value="architect">Architect</option>
+                                <option value="interior_designer">Interior Designer</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_business_name">Business Name</label>
+                            <input type="text" id="id_business_name" name="business_name" required
+                                   placeholder="Your company name" value="{{ form.business_name.value|default:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_years_of_experience">Years of Experience</label>
+                        <input type="number" id="id_years_of_experience" name="years_of_experience" min="0" required
+                               placeholder="e.g., 5" value="{{ form.years_of_experience.value|default:'' }}">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="id_password1">Password</label>
+                            <input type="password" id="id_password1" name="password1" required placeholder="Min. 8 characters">
+                            {% if form.password1.errors %}<span style="color:#DC2626;font-size:12px;">{{ form.password1.errors.0 }}</span>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="id_password2">Confirm Password</label>
+                            <input type="password" id="id_password2" name="password2" required placeholder="Re-enter password">
+                            {% if form.password2.errors %}<span style="color:#DC2626;font-size:12px;">{{ form.password2.errors.0 }}</span>{% endif %}
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary">Create Professional Account</button>
+                </form>
+
+                <div class="form-footer">
+                    <p>Already have an account? <a href="{% url 'account_login' %}" class="link-bold">Sign In</a></p>
+                    <p style="margin-top: 8px; font-size: 12px; color: #6B7280;">
+                        Just looking to build? <a href="{% url 'account_signup' %}" class="link-bold">Sign up as customer</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

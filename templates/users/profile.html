@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile — OurHome{% endblock %}
+
+{% block content %}
+<div class="pe-page">
+
+  <div class="pf-header-wrap">
+
+  <!-- ── Banner — custom image if uploaded, gradient fallback ── -->
+  <div class="pf-banner"{% if profile_user.banner_image %}
+       style="background-image:url('{{ profile_user.banner_image.url }}');
+              background-size:cover;background-position:center;background-repeat:no-repeat;"
+  {% elif provider_profile.banner_image %}
+       style="background-image:url('{{ provider_profile.banner_image.url }}');
+              background-size:cover;background-position:center;background-repeat:no-repeat;"
+  {% endif %}></div>
+
+  <!-- ── Profile row — avatar overlaps banner, name+email sit beside it ── -->
+  <div class="pf-info-bar">
+    <div class="pf-info-bar-inner">
+
+      <!-- Avatar: negative margin-top pulls it up over the banner bottom edge -->
+      <div class="pf-avatar-wrap"
+           style="position:relative;z-index:10;{% if profile_user.profile_photo %}cursor:pointer;{% endif %}"
+           {% if profile_user.profile_photo %}
+           onclick="document.getElementById('profile-lightbox').style.display='flex'"
+           onmouseenter="document.getElementById('pf-zoom-overlay').style.opacity='1';document.getElementById('pf-avatar-img').style.transform='scale(1.08)'"
+           onmouseleave="document.getElementById('pf-zoom-overlay').style.opacity='0';document.getElementById('pf-avatar-img').style.transform='scale(1)'"
+           title="View photo"
+           {% endif %}>
+
+        {% if profile_user.profile_photo %}
+          <img id="pf-avatar-img"
+               src="{{ profile_user.profile_photo.url }}" alt="Profile photo"
+               style="width:100%;height:100%;object-fit:cover;display:block;
+                      border-radius:50%;transition:transform 0.2s ease;">
+          <div id="pf-zoom-overlay"
+               style="position:absolute;inset:0;border-radius:50%;
+                      background:rgba(0,0,0,0.38);
+                      display:flex;align-items:center;justify-content:center;
+                      opacity:0;transition:opacity 0.2s ease;pointer-events:none;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                 stroke="white" stroke-width="2.5" stroke-linecap="round">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              <line x1="11" y1="8" x2="11" y2="14"/>
+              <line x1="8" y1="11" x2="14" y2="11"/>
+            </svg>
+          </div>
+        {% else %}
+          {{ profile_user.first_name|first|upper }}{{ profile_user.last_name|first|upper }}
+        {% endif %}
+      </div>
+
+      <!-- Name + role badge + email -->
+      <div style="flex:1;min-width:0;padding-left:16px;">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+          <h1 style="margin:0;font-size:28px;font-weight:700;color:#1a1a1a;line-height:1.2;">
+            {{ profile_user.full_name }}
+          </h1>
+          <span style="padding:3px 12px;border-radius:20px;font-size:11px;font-weight:700;
+                       background:#fde8f2;color:var(--primary);
+                       border:1px solid #fbb6d6;
+                       letter-spacing:0.04em;white-space:nowrap;text-transform:uppercase;">
+            {{ profile_user.get_user_type_display }}
+          </span>
+        </div>
+        <p style="margin:0;color:#6B7280;font-size:14px;">{{ profile_user.email }}</p>
+      </div>
+
+      <!-- Edit button -->
+      <div style="flex-shrink:0;margin-left:auto;align-self:center;padding-left:20px;">
+        <a href="{% url 'profile_edit' %}"
+           style="padding:10px 22px;background:var(--primary);color:#fff;border-radius:10px;
+                  font-size:14px;font-weight:700;text-decoration:none;white-space:nowrap;
+                  box-shadow:0 2px 8px rgba(252,39,121,0.25);display:inline-block;">
+          Edit Profile
+        </a>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /pf-header-wrap -->
+
+  <!-- ── Body ── -->
+  <div class="pe-body">
+
+    <!-- Personal Information card -->
+    <div class="pe-card">
+      <h2 class="pe-card-title">Personal Information</h2>
+      <div class="pe-grid-2">
+        <div class="pe-field">
+          <div class="pe-label">Phone</div>
+          <div style="font-size:14px;color:var(--gray-900);font-weight:500;">{{ profile_user.phone|default:"—" }}</div>
+        </div>
+        <div class="pe-field">
+          <div class="pe-label">Date of Birth</div>
+          <div style="font-size:14px;color:var(--gray-900);font-weight:500;">{{ profile_user.date_of_birth|default:"—" }}</div>
+        </div>
+        <div class="pe-field">
+          <div class="pe-label">City</div>
+          <div style="font-size:14px;color:var(--gray-900);font-weight:500;">{{ profile_user.city|default:"—" }}</div>
+        </div>
+        <div class="pe-field">
+          <div class="pe-label">District</div>
+          <div style="font-size:14px;color:var(--gray-900);font-weight:500;">{{ profile_user.district|default:"—" }}</div>
+        </div>
+        <div class="pe-field">
+          <div class="pe-label">State</div>
+          <div style="font-size:14px;color:var(--gray-900);font-weight:500;">{{ profile_user.state|default:"—" }}</div>
+        </div>
+        <div class="pe-field">
+          <div class="pe-label">Pincode</div>
+          <div style="font-size:14px;color:var(--gray-900);font-weight:500;">{{ profile_user.pincode|default:"—" }}</div>
+        </div>
+      </div>
+      {% if profile_user.bio %}
+      <div class="pe-field" style="margin-top:4px;">
+        <div class="pe-label">Bio</div>
+        <div style="font-size:14px;color:var(--gray-900);line-height:1.6;">{{ profile_user.bio }}</div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Professional Information (providers only) -->
+    {% if provider_profile %}
+    <div class="pe-card">
+      <h2 class="pe-card-title">Professional Information</h2>
+      <div class="pe-grid-2">
+        <div class="pe-field">
+          <div class="pe-label">Business Name</div>
+          <div style="font-size:14px;color:var(--gray-900);font-weight:500;">{{ provider_profile.business_name }}</div>
+        </div>
+        <div class="pe-field">
+          <div class="pe-label">Verification Status</div>
+          <div style="font-size:14px;font-weight:700;
+            {% if provider_profile.is_verified %}color:var(--success);{% else %}color:#D97706;{% endif %}">
+            {{ provider_profile.get_verification_status_display }}
+          </div>
+        </div>
+        <div class="pe-field">
+          <div class="pe-label">Years of Experience</div>
+          <div style="font-size:14px;color:var(--gray-900);font-weight:500;">{{ provider_profile.years_of_experience }} years</div>
+        </div>
+        <div class="pe-field">
+          <div class="pe-label">Projects Completed</div>
+          <div style="font-size:14px;color:var(--gray-900);font-weight:500;">{{ provider_profile.total_projects_completed }}</div>
+        </div>
+        <div class="pe-field">
+          <div class="pe-label">Price Range</div>
+          <div style="font-size:14px;color:var(--gray-900);font-weight:500;">{{ provider_profile.price_range_display }}</div>
+        </div>
+      </div>
+      {% if provider_profile.specializations %}
+      <div class="pe-field" style="margin-top:4px;">
+        <div class="pe-label">Specializations</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;">
+          {% for spec in provider_profile.specializations %}
+            <span style="background:var(--gray-100);color:var(--gray-700);padding:4px 12px;border-radius:8px;font-size:12px;font-weight:600;">{{ spec }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      {% if provider_profile.is_verified %}
+      <div style="margin-top:20px;">
+        <a href="{% if profile_user.user_type == 'contractor' %}{% url 'contractor_profile' profile_user.username %}{% elif profile_user.user_type == 'architect' %}{% url 'architect_profile' profile_user.username %}{% else %}{% url 'designer_profile' profile_user.username %}{% endif %}"
+           style="display:inline-flex;align-items:center;gap:6px;padding:10px 22px;
+                  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+                  color:#fff;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          View Public Profile
+        </a>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  </div><!-- /pe-body -->
+</div><!-- /pe-page -->
+
+{% if profile_user.profile_photo %}
+<!-- ── Profile photo lightbox ─────────────────────────────── -->
+<div id="profile-lightbox"
+     style="display:none; position:fixed; inset:0; z-index:9999;
+            background:rgba(0,0,0,0.85);
+            align-items:center; justify-content:center;
+            cursor:zoom-out;"
+     onclick="this.style.display='none'">
+
+  <div style="position:relative;"
+       onclick="event.stopPropagation()">
+
+    <img src="{{ profile_user.profile_photo.url }}"
+         alt="Profile photo"
+         style="width:min(400px,85vw); height:min(400px,85vw);
+                border-radius:50%; object-fit:cover;
+                border:4px solid white;
+                box-shadow:0 20px 60px rgba(0,0,0,0.5);
+                display:block;">
+
+    <!-- Close button -->
+    <button onclick="document.getElementById('profile-lightbox').style.display='none'"
+            style="position:absolute; top:-14px; right:-14px;
+                   width:34px; height:34px; border-radius:50%;
+                   background:#e91e8c; color:white; border:none;
+                   font-size:16px; font-weight:700; cursor:pointer;
+                   display:flex; align-items:center; justify-content:center;
+                   box-shadow:0 2px 10px rgba(0,0,0,0.3);
+                   line-height:1;">✕</button>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      document.getElementById('profile-lightbox').style.display = 'none';
+    }
+  });
+</script>
+{% endif %}
+{% endblock %}

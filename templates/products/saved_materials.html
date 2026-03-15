@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Saved Materials — OurHome{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/products.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="db-page">
+
+  <!-- Gradient header -->
+  <div class="db-hero" style="padding: 40px 24px 48px;">
+    <div class="db-hero-inner">
+      <div class="db-hero-left">
+        <div class="db-user-type-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          Saved Materials
+        </div>
+        <h1 class="db-welcome-name">Your Wishlist</h1>
+        <!--
+          id="saved-count" — updated by OOB swap in remove_saved view
+          whenever a card is removed without a full page reload.
+        -->
+        <p class="db-welcome-sub">
+          <span id="saved-count">{{ saved|length }} material{{ saved|length|pluralize }} saved</span>
+        </p>
+      </div>
+      <div class="db-hero-actions">
+        <a href="{% url 'product_list' %}" class="db-hero-btn db-hero-btn--ghost">Browse More Materials</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="db-body">
+
+    <!-- Card grid — always in DOM so HTMX can target individual cards -->
+    <div class="saved-grid">
+      {% for entry in saved %}
+      {% with product=entry.product %}
+      <!--
+        id="saved-card-<slug>" is the hx-target for the Remove button.
+        hx-swap="outerHTML" + empty response = element removed from DOM.
+      -->
+      <div class="saved-card" id="saved-card-{{ product.slug }}">
+
+        <!-- Product image -->
+        <a href="{% url 'product_detail' product.slug %}" class="saved-card-img-wrap">
+          {% if product.primary_image_url %}
+          <img src="{{ product.primary_image_url }}" alt="{{ product.name }}" class="saved-card-img">
+          {% else %}
+          <div class="saved-card-img saved-card-img--empty">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </div>
+          {% endif %}
+        </a>
+
+        <!-- Info -->
+        <div class="saved-card-body">
+          <div class="saved-card-cat">{{ product.get_category_display }}</div>
+          <a href="{% url 'product_detail' product.slug %}" class="saved-card-name">{{ product.name }}</a>
+          <div class="saved-card-brand">{{ product.brand }}</div>
+          <div class="saved-card-price">₹{{ product.price|floatformat:0 }}<span class="saved-card-unit"> / {{ product.unit }}</span></div>
+          <div class="saved-card-meta">Saved {{ entry.saved_at|date:"d M Y" }}</div>
+        </div>
+
+        <!-- Actions row -->
+        <div class="saved-card-actions">
+          <button class="saved-card-remove"
+                  hx-post="{% url 'remove_saved' product.slug %}"
+                  hx-target="#saved-card-{{ product.slug }}"
+                  hx-swap="outerHTML"
+                  hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Remove
+          </button>
+          <a href="{% url 'product_detail' product.slug %}" class="saved-card-view">View Details →</a>
+        </div>
+
+      </div>
+      {% endwith %}
+      {% endfor %}
+    </div><!-- /saved-grid -->
+
+    <!--
+      Empty state — always in the DOM so the OOB swap in remove_saved
+      can reveal it (style="display:block") after the last card is removed.
+      Hidden with display:none when at least one saved item exists.
+    -->
+    <div id="empty-state"
+         class="saved-empty"
+         {% if saved %}style="display:none"{% endif %}>
+      <div class="saved-empty-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </div>
+      <h2 class="saved-empty-title">No saved materials yet</h2>
+      <p class="saved-empty-sub">Browse materials and click "Save Material" to build your list.</p>
+      <a href="{% url 'product_list' %}" class="db-hero-btn db-hero-btn--primary" style="display:inline-flex;margin-top:8px;">Browse Materials →</a>
+    </div>
+
+  </div><!-- /db-body -->
+</div><!-- /db-page -->
+
+<style>
+.saved-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.saved-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,.06);
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow .15s, transform .15s;
+}
+
+.saved-card:hover {
+  box-shadow: 0 4px 16px rgba(252,39,121,.1);
+  transform: translateY(-2px);
+}
+
+.saved-card-img-wrap { display: block; }
+
+.saved-card-img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  display: block;
+  background: #f3f4f6;
+}
+
+.saved-card-img--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #d1d5db;
+}
+
+.saved-card-body {
+  padding: 16px 18px 12px;
+  flex: 1;
+}
+
+.saved-card-cat {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--primary, #FC2779);
+  margin-bottom: 4px;
+}
+
+.saved-card-name {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #1e1b4b;
+  text-decoration: none;
+  display: block;
+  margin-bottom: 2px;
+  line-height: 1.3;
+}
+
+.saved-card-name:hover { color: var(--primary, #FC2779); }
+
+.saved-card-brand {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-bottom: 10px;
+}
+
+.saved-card-price {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: #1e1b4b;
+  letter-spacing: -.02em;
+}
+
+.saved-card-unit {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #9ca3af;
+}
+
+.saved-card-meta {
+  font-size: 0.72rem;
+  color: #9ca3af;
+  margin-top: 6px;
+}
+
+.saved-card-actions {
+  padding: 12px 18px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.saved-card-remove {
+  -webkit-appearance: none;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #9ca3af;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color .15s;
+}
+
+.saved-card-remove:hover { color: #ef4444; }
+
+.saved-card-view {
+  margin-left: auto;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--primary, #FC2779);
+  text-decoration: none;
+}
+
+.saved-card-view:hover { text-decoration: underline; }
+
+/* Empty state */
+.saved-empty {
+  text-align: center;
+  padding: 80px 24px;
+}
+
+.saved-empty-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #fce4ec;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  color: var(--primary, #FC2779);
+}
+
+.saved-empty-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #1e1b4b;
+  margin: 0 0 8px;
+}
+
+.saved-empty-sub {
+  font-size: 0.95rem;
+  color: #64748b;
+  margin: 0 0 24px;
+}
+
+@media (max-width: 640px) {
+  .saved-grid { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}

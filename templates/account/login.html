@@ -1,0 +1,165 @@
+<!--
+templates/account/login.html — allauth Login Template Override
+
+HOW ALLAUTH TEMPLATE OVERRIDES WORK:
+- allauth looks for templates in templates/account/ FIRST.
+- If it finds login.html there, it uses OUR version instead of its default.
+- allauth passes a 'form' variable to this template automatically.
+- The form has email and password fields already configured.
+
+TEMPLATE VARIABLES PROVIDED BY ALLAUTH:
+- form: The login form (email + password fields)
+- redirect_field_value: Where to go after login (if specified)
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - OurHome</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+</head>
+<body>
+    <div class="auth-page">
+        <!-- Left Side - Branding (same design as before) -->
+        <div class="auth-brand">
+            <div class="brand-content">
+                <a href="{% url 'home' %}" class="back-home">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Back to Home
+                </a>
+
+                <div class="brand-logo">
+                    <svg class="brand-icon" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                    <h1>OurHome</h1>
+                </div>
+
+                <h2>Building Dreams,<br>One Brick at a Time</h2>
+
+                <div class="brand-stats">
+                    <div class="stat">
+                        <div class="stat-number">10,000+</div>
+                        <div class="stat-label">Verified Materials</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">500+</div>
+                        <div class="stat-label">Trusted Contractors</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">95%</div>
+                        <div class="stat-label">Customer Satisfaction</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side - Login Form -->
+        <div class="auth-form-section">
+            <div class="form-container">
+                <div class="form-header">
+                    <h2>Welcome Back</h2>
+                    <p>Sign in to continue to OurHome</p>
+                </div>
+
+                <!-- Consume all queued messages so they don't stack up on the next page.
+                     Only display error/warning messages here (success messages like
+                     "Profile updated" belong on other pages, not the login page). -->
+                {% for message in messages %}
+                  {% if 'error' in message.tags or 'warning' in message.tags %}
+                  <div style="background:{% if 'error' in message.tags %}#fee2e2{% else %}#fff3cd{% endif %};
+                              border:1px solid {% if 'error' in message.tags %}#fecaca{% else %}#ffc107{% endif %};
+                              border-radius:8px; padding:0.75rem 1rem;
+                              margin-bottom:1rem;
+                              color:{% if 'error' in message.tags %}#991b1b{% else %}#856404{% endif %};
+                              font-size:0.9rem;">
+                    {{ message }}
+                  </div>
+                  {% endif %}
+                {% endfor %}
+
+                <!-- Redirect-to-login message -->
+                {% if request.GET.next %}
+                <div style="background:#fff3cd; border:1px solid #ffc107;
+                            border-radius:8px; padding:0.75rem 1rem;
+                            margin-bottom:1rem; color:#856404; font-size:0.9rem;">
+                    🔒 Please sign in to continue.
+                </div>
+                {% endif %}
+
+                <!-- allauth provides the 'form' variable with email and password fields -->
+                <form method="POST" action="{% url 'account_login' %}" class="auth-form">
+                    {% csrf_token %}
+                    <!-- Preserve the next redirect param so we return to the requested page -->
+                    {% if request.GET.next %}
+                    <input type="hidden" name="next" value="{{ request.GET.next }}">
+                    {% endif %}
+
+                    <!-- Display form-level errors (e.g., "Invalid email or password") -->
+                    {% if form.non_field_errors %}
+                        <div style="padding: 10px; margin-bottom: 12px; border-radius: 8px; font-size: 13px; background: #FEE2E2; color: #991B1B; border: 1px solid #FECACA;">
+                            {% for error in form.non_field_errors %}
+                                <p style="margin: 0;">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <div class="form-group">
+                        <label for="id_login">Email Address</label>
+                        <input
+                            type="email"
+                            id="id_login"
+                            name="login"
+                            placeholder="you@example.com"
+                            required
+                            autocomplete="email"
+                            value="{{ form.login.value|default:'' }}"
+                        >
+                        {% if form.login.errors %}
+                            <span style="color: #DC2626; font-size: 12px;">{{ form.login.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_password">Password</label>
+                        <input
+                            type="password"
+                            id="id_password"
+                            name="password"
+                            placeholder="Enter your password"
+                            required
+                            autocomplete="current-password"
+                        >
+                        {% if form.password.errors %}
+                            <span style="color: #DC2626; font-size: 12px;">{{ form.password.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-options">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="remember">
+                            <span>Remember me</span>
+                        </label>
+                        <a href="{% url 'account_reset_password' %}" class="link-primary">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="btn-primary">Sign In</button>
+                </form>
+
+                <div class="form-footer">
+                    <p>Don't have an account? <a href="{% url 'account_signup' %}" class="link-bold">Sign Up</a></p>
+                    <p style="margin-top: 8px; font-size: 12px; color: #6B7280;">
+                        Are you a contractor, architect, or designer?
+                        <a href="{% url 'provider_signup' %}" class="link-bold">Register here</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

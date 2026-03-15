@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add Portfolio Project — OurHome{% endblock %}
+
+{% block content %}
+<div style="max-width: 640px; margin: 100px auto 60px; padding: 0 24px;">
+  <h1 style="font-size: 24px; font-weight: 800; color: #111827; margin-bottom: 8px;">Add Portfolio Project</h1>
+  <p style="color: #6B7280; margin-bottom: 32px;">Showcase your best work to potential clients.</p>
+
+  <form method="post" enctype="multipart/form-data"
+        style="background: white; border: 1px solid #E5E7EB; border-radius: 16px; padding: 32px;">
+    {% csrf_token %}
+
+    {% for field in form %}
+      {% if field.name == 'featured' %}
+
+        <!-- ── Featured toggle card ─────────────────────── -->
+        <div class="portfolio-featured-card" id="featuredCard">
+          <div style="display:flex; align-items:center; gap:14px; flex:1; min-width:0;">
+            <span style="font-size:1.5rem; flex-shrink:0;">⭐</span>
+            <div>
+              <div style="font-size:14px; font-weight:700; color:#111827; margin-bottom:3px;">
+                Feature this project
+              </div>
+              <div style="font-size:13px; color:#6B7280; line-height:1.5;">
+                Featured projects appear first on your public profile and get highlighted
+                in the directory listing — helping you attract more clients.
+              </div>
+            </div>
+          </div>
+
+          <!-- Toggle switch -->
+          <label class="pf-toggle" for="{{ field.id_for_label }}">
+            {{ field }}
+            <span class="pf-toggle-track">
+              <span class="pf-toggle-thumb"></span>
+            </span>
+          </label>
+        </div>
+
+        {% if field.errors %}
+          {% for error in field.errors %}
+            <p style="color:#DC2626;font-size:13px;margin-top:4px;">{{ error }}</p>
+          {% endfor %}
+        {% endif %}
+
+      {% else %}
+
+        <!-- ── Standard field ────────────────────────────── -->
+        <div style="margin-bottom:20px;">
+          <label style="display:block;font-size:14px;font-weight:600;color:#374151;margin-bottom:6px;">
+            {{ field.label }}{% if field.field.required %} *{% endif %}
+          </label>
+          {{ field }}
+          {% if field.errors %}
+            {% for error in field.errors %}
+              <p style="color:#DC2626;font-size:13px;margin-top:4px;">{{ error }}</p>
+            {% endfor %}
+          {% endif %}
+          {% if field.help_text %}
+            <p style="color:#9CA3AF;font-size:12px;margin-top:4px;">{{ field.help_text }}</p>
+          {% endif %}
+        </div>
+
+      {% endif %}
+    {% endfor %}
+
+    <div style="display:flex;gap:12px;margin-top:24px;">
+      <button type="submit"
+              style="flex:1;padding:12px;background:#FC2779;color:white;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:15px;">
+        Upload Project
+      </button>
+      <a href="{% url 'dashboard' %}"
+         style="flex:1;padding:12px;background:#F3F4F6;color:#374151;border-radius:10px;font-weight:600;text-align:center;text-decoration:none;font-size:15px;">
+        Cancel
+      </a>
+    </div>
+  </form>
+</div>
+
+<style>
+/* Featured toggle card */
+.portfolio-featured-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 2px solid #E5E7EB;
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  background: #fff;
+}
+.portfolio-featured-card.is-featured {
+  border-color: #FC2779;
+  background: #fff0f6;
+}
+
+/* Hide the native checkbox */
+.pf-toggle input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Toggle label wrapper */
+.pf-toggle {
+  position: relative;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+/* Track */
+.pf-toggle-track {
+  display: block;
+  width: 48px;
+  height: 26px;
+  border-radius: 999px;
+  background: #D1D5DB;
+  transition: background 0.2s;
+  position: relative;
+}
+
+/* Thumb */
+.pf-toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  transition: transform 0.2s;
+}
+
+/* Checked state */
+.pf-toggle input[type="checkbox"]:checked ~ .pf-toggle-track {
+  background: linear-gradient(135deg, #FC2779, #7C3AED);
+}
+.pf-toggle input[type="checkbox"]:checked ~ .pf-toggle-track .pf-toggle-thumb {
+  transform: translateX(22px);
+}
+</style>
+
+<script>
+(function () {
+  const checkbox = document.getElementById('{{ form.featured.id_for_label }}');
+  const card = document.getElementById('featuredCard');
+  if (!checkbox || !card) return;
+
+  function sync() {
+    card.classList.toggle('is-featured', checkbox.checked);
+  }
+  sync();
+  checkbox.addEventListener('change', sync);
+  // Clicking the card (outside the label) also toggles
+  card.addEventListener('click', function (e) {
+    if (e.target.closest('.pf-toggle')) return; // label handles it
+    checkbox.checked = !checkbox.checked;
+    checkbox.dispatchEvent(new Event('change'));
+  });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Complete Your Profile - OurHome{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 100px auto 60px; padding: 0 24px;">
+    <h1 style="font-size: 24px; font-weight: 800; color: #111827; margin-bottom: 8px;">Complete Your Professional Profile</h1>
+    <p style="color: #6B7280; font-size: 14px; margin-bottom: 24px;">
+        Fill in your business details and upload verification documents.
+        Your profile will be reviewed within 2-3 business days.
+    </p>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div style="padding: 12px 16px; margin-bottom: 16px; border-radius: 10px; font-size: 14px;
+                {% if message.tags == 'success' %}background: #D1FAE5; color: #065F46;{% endif %}
+                {% if message.tags == 'error' %}background: #FEE2E2; color: #991B1B;{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div style="background: white; border-radius: 12px; border: 1px solid #E5E7EB; padding: 24px; margin-bottom: 16px;">
+            <h3 style="font-size: 15px; font-weight: 700; color: #111827; margin-bottom: 16px;">Business Details</h3>
+            {% for field in form %}
+                <div style="margin-bottom: 14px;">
+                    <label for="{{ field.id_for_label }}" style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 4px;">
+                        {{ field.label }}
+                    </label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <span style="color: #9CA3AF; font-size: 11px;">{{ field.help_text }}</span>
+                    {% endif %}
+                    {% if field.errors %}
+                        <span style="color: #DC2626; font-size: 12px;">{{ field.errors.0 }}</span>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <button type="submit" style="width: 100%; background: linear-gradient(135deg, #FC2779, #D91F63); color: white; padding: 12px 20px; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer;">
+            Submit for Verification
+        </button>
+    </form>
+</div>
+{% endblock %}
