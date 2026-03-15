@@ -46,7 +46,7 @@ build/
 *.bak
 *.backup
 
-# Claude Code (AI assistant config — never push to GitHub)
+# Claude Code (AI assistant config)
 .claude/
 
 # Local dev files
