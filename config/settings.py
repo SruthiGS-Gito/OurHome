@@ -178,8 +178,9 @@ STATICFILES_DIRS = [BASE_DIR / 'static'] # Added for static files
 STATIC_ROOT = BASE_DIR / 'staticfiles' # Added for static files collection
 
 # Media files
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media' # Added for media files
+# MEDIA_URL = '/media/'
+# 
+# MEDIA_ROOT = BASE_DIR / 'media' # Added for media files
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
