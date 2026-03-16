@@ -245,12 +245,11 @@ CRISPY_TEMPLATE_PACK = 'bootstrap5'
 GROQ_API_KEY = os.getenv('GROQ_API_KEY', '')
 
 # settings.py
+import cloudinary
+import cloudinary_storage
+
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-# Ensure these are NOT hardcoded
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
-    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
-    'SECURE': True,
+    'CLOUDINARY_URL': os.environ.get('CLOUDINARY_URL')
 }
