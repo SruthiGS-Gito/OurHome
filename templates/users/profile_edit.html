@@ -17,19 +17,18 @@ HTMX INTEGRATION:
     <div class="pf-header-wrap">
 
     <!-- Banner — custom image if uploaded, gradient fallback -->
+    {% with banner=user.service_provider_profile.banner_image|default:user.banner_image %}
     <div class="pf-banner"
-        {% with banner=user.service_provider_profile.banner_image|default:user.banner_image %}
-        <div class="pf-banner"
-            {% if banner %}
-            style="background-image:url('{{ banner.url }}');
+         {% if banner %}
+         style="background-image:url('{{ banner.url }}');
                 background-size:cover;
                 background-position:center;
                 background-repeat:no-repeat;"
-            {% endif %}>
-        {% endwith %}
+         {% endif %}>
         <div class="pe-header-overlay"></div>
     </div>
-
+    {% endwith %}
+        
     <!-- Info row: avatar (overlaps banner) + Edit Profile title + email -->
     <div class="pf-info-bar">
         <div class="pf-info-bar-inner">
