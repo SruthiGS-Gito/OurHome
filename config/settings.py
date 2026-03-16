@@ -38,6 +38,11 @@ ALLOWED_HOSTS = [
     'daring-creativity-production.up.railway.app' # Adding this as a backup based on your project name
 ]
 
+# Django needs to know your live URL is safe for forms (login)
+CSRF_TRUSTED_ORIGINS = [
+    'https://ourhome-production-2ac9.up.railway.app',
+    'https://daring-creativity-production.up.railway.app'
+]
 
 # Application definition
 
