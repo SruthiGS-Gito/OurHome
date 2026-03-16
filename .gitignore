@@ -55,3 +55,5 @@ migrate_to_gemini.py
 patch_gemini_final.py
 fix_ourhome_ui.py
 config/settings.py.bak
+
+*.json
