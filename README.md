@@ -1,46 +1,49 @@
-# OurHome 🏠 | The Digital Gateway to Kerala Construction
+# OurHome 🏠 | Integrated Construction Management Ecosystem
 
-OurHome is a high-performance web platform built to modernize the home-building journey in Kerala. By integrating professional networking, a curated material marketplace, and AI-driven analysis, OurHome ensures that every home is built with precision, transparency, and regional suitability.
+OurHome is a web-based platform designed to organize the construction sector by providing a centralized digital ecosystem for homeowners and professionals. It integrates a verified professional directory with a materials marketplace grounded in government-verified pricing data.
 
-🌐 **Access the Live Platform:** [https://ourhome-production-2ac9.up.railway.app/](https://ourhome-production-2ac9.up.railway.app/)
-
----
-
-## 🌟 The OurHome Solution
-
-Building a home is the biggest investment of a lifetime. OurHome simplifies this complexity through three core pillars:
-
-### 1. Verified Professional Network
-Connect with a hand-picked directory of contractors, architects, and interior designers. Users can browse portfolios, verify years of experience, and contact professionals directly, reducing the risk of fraud in the construction sector.
-
-### 2. Intelligent Material Marketplace
-A specialized marketplace for structural materials like Cement, Steel, and Bricks. Each listing is integrated with detailed specifications and regional pricing data, allowing homeowners to plan their budget with accuracy.
-
-### 3. AI-Powered Suitability Analysis
-Leveraging **Google Gemini Pro**, the platform offers a "Material Analyzer." It provides real-time assessments of materials based on Kerala's unique tropical climate, helping users choose products that offer the best long-term durability.
+🌐 **Live Platform:** [https://ourhome-production-2ac9.up.railway.app/](https://ourhome-production-2ac9.up.railway.app/)
 
 ---
 
-## 🏗️ Production Architecture
+## 🛠️ Core Functionalities
 
-This platform is engineered for stability, security, and speed:
+### 1. Verified Professional Directory
+[cite_start]A searchable database of contractors, architects, and interior designers[cite: 25, 38]. [cite_start]Users can access verified professional profiles and portfolios to eliminate reliance on informal referral networks[cite: 38, 57].
 
-* **Secure Infrastructure:** Hosted on **Railway.app** with environment-variable isolation to ensure zero exposure of sensitive system data.
-* **Persistent Media Delivery:** Integrated with **Cloudinary CDN**, ensuring that high-resolution professional portfolios and product images are delivered instantly across any device.
-* **Data Integrity:** Powered by a robust **MySQL** relational database, optimized for complex filtering of materials and professional services.
-* **Zero-Trust Security:** Purged Git history and strictly managed CSRF/Origin headers ensure the highest standards of web security.
+### 2. Materials Marketplace with Price Transparency
+[cite_start]A curated catalog featuring 80+ construction products[cite: 54, 55]. [cite_start]All material pricing is sourced from the **Kerala PWD Schedule of Rates (SOR) 2024** to ensure cost transparency and prevent contractor overcharging[cite: 48, 64, 65].
 
----
-
-## 📈 Platform Impact
-* **Efficiency:** Reduces the time spent searching for vetted professionals by 70%.
-* **Transparency:** Provides direct access to material specifications and professional track records.
-* **Innovation:** One of the first platforms in the region to integrate Generative AI into the construction material selection process.
+### 3. AI Bill & Material Analyzer
+[cite_start]Integration with the **Groq API (LLaMA 3.3 70B)** allows for automated analysis of contractor quotes[cite: 47, 58]. [cite_start]The system flags potential overpricing and evaluates material suitability based on specific regional climate zones[cite: 59, 60, 61].
 
 ---
 
-## 👤 Author
-**Sruthi G S** [LinkedIn](https://www.linkedin.com/in/sruthi-g-s-381b96366) | [GitHub](https://github.com/SruthiGS-Gito)
+## ⚙️ Technical Architecture
+
+* [cite_start]**Backend:** Developed using **Django (Python)** with an MVC architecture and ORM for database management[cite: 44].
+* [cite_start]**Database:** Powered by **MySQL** for relational data storage of users, products, and verified profiles[cite: 46].
+* [cite_start]**Frontend:** Built with **HTML5, CSS3, and JavaScript**, utilizing **HTMX** for dynamic interactions without full page reloads[cite: 42].
+* **Media Storage:** Integrated with **Cloudinary CDN** for secure, persistent hosting of project images and profile banners.
+* [cite_start]**Authentication:** Secured via **Django Allauth** for role-based access control (Customer vs. Professional)[cite: 45, 63].
+* [cite_start]**Deployment:** Hosted on **Railway.app** with automated CI/CD via GitHub integration[cite: 49, 50].
 
 ---
-*OurHome: Building the future of Kerala, one brick at a time.*
+
+## 🛡️ Security & Integrity Measures
+
+* **Credential Isolation:** All API keys (Groq, Cloudinary) and production secrets are managed via environment variables to prevent codebase exposure.
+* **History Scrubbing:** Sensitive data and initial database fixtures have been permanently purged from the Git history.
+* [cite_start]**Data Validation:** Integration with government-verified SOR data ensures all pricing logic remains objective and transparent[cite: 65, 72].
+
+---
+
+## 👤 Team Details (NG_CP_Team_4865)
+* **Sruthi G S** - [LinkedIn](https://www.linkedin.com/in/sruthi-g-s-381b96366) | [cite_start][GitHub](https://github.com/SruthiGS-Gito) [cite: 2, 3]
+* [cite_start]**R Anand** [cite: 4]
+* [cite_start]**Judith Susan Soney** [cite: 5]
+* [cite_start]**Vrinda V** [cite: 6]
+* [cite_start]**College:** Sree Buddha College of Engineering, Pattoor [cite: 7]
+
+---
+[cite_start]*Developed under the Next Gen Employability Program to bring transparency to the construction industry.* [cite: 8, 72]
