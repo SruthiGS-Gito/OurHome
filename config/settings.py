@@ -47,12 +47,14 @@ CSRF_TRUSTED_ORIGINS = [
 # Application definition
 
 INSTALLED_APPS = [
+    'cloudinary_storage',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'cloudinary',
     'django.contrib.sites',  # Required by django-allauth for multi-site support
 
     # Third-party apps
@@ -73,8 +75,6 @@ INSTALLED_APPS = [
     'apps.reviews',
     'apps.reservations',
     
-    'cloudinary_storage',
-    'cloudinary',
 ]
 
 MIDDLEWARE = [
