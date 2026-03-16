@@ -538,7 +538,7 @@
     background: var(--white);
     border: 2px solid var(--gray-200);
     border-radius: 16px;
-    padding: 24px;
+    padding: 16px;
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
@@ -553,9 +553,9 @@
 }
 
 .contractor-header {
-    height: 140px;
-    margin: -24px -24px 16px -24px;
-    padding: 12px 16px;
+    height: 100px;
+    margin: -16px -16px 14px -16px;
+    padding: 10px 14px;
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
@@ -567,13 +567,13 @@
 /* Contractor Avatar with Image Support */
 .contractor-avatar-wrapper {
     position: relative;
-    width: 64px;
-    height: 64px;
+    width: 48px;
+    height: 48px;
 }
 
 .contractor-avatar-img {
-    width: 64px;
-    height: 64px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     object-fit: cover;
     border: 3px solid var(--white);
@@ -581,8 +581,8 @@
 }
 
 .contractor-avatar {
-    width: 64px;
-    height: 64px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--primary), var(--secondary));
     color: var(--white);
@@ -590,7 +590,7 @@
     align-items: center;
     justify-content: center;
     font-weight: 800;
-    font-size: 24px;
+    font-size: 18px;
 }
 
 /* Designer Avatar — orange gradient */
