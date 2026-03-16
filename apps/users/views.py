@@ -188,7 +188,16 @@ def profile_edit_view(request):
                     'provider_form': provider_form,
                     'success': True,
                 })
-            return redirect('profile')
+
+            # For normal requests, reload edit page with success message
+            form = UserProfileForm(instance=user)
+            provider_form = ServiceProviderProfileForm(instance=profile) if user.is_service_provider else None
+
+            return render(request, 'users/profile_edit.html', {
+                'form': form,
+                'provider_form': provider_form,
+            'success': True
+            })
         else:
             # Validation failed — show errors
             if request.htmx:
