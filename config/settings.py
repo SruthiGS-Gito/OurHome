@@ -72,6 +72,9 @@ INSTALLED_APPS = [
     'apps.verifier',
     'apps.reviews',
     'apps.reservations',
+    
+    'cloudinary_storage',
+    'cloudinary',
 ]
 
 MIDDLEWARE = [

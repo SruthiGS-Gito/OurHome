@@ -56,3 +56,5 @@ urllib3==2.6.3
 websockets==16.0
 gunicorn==23.0.0
 whitenoise==6.4.0
+cloudinary>=1.41.0
+django-cloudinary-storage>=0.3.0
