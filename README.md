@@ -33,7 +33,6 @@ Integration with the **Groq API (LLaMA 3.3 70B)** allows for automated analysis 
 ## 🛡️ Security & Integrity Measures
 
 * **Credential Isolation:** All API keys (Groq, Cloudinary) and production secrets are managed via environment variables to prevent codebase exposure.
-* **History Scrubbing:** Sensitive data and initial database fixtures have been permanently purged from the Git history.
 * **Data Validation:** Integration with government-verified SOR data ensures all pricing logic remains objective and transparent.
 
 ---
