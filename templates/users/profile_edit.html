@@ -18,13 +18,15 @@ HTMX INTEGRATION:
 
     <!-- Banner — custom image if uploaded, gradient fallback -->
     <div class="pf-banner"
-         {% if user.banner_image %}
-         style="background-image:url('{{ user.banner_image.url }}');
-                background-size:cover;background-position:center;background-repeat:no-repeat;"
-         {% elif user.service_provider_profile.banner_image %}
-         style="background-image:url('{{ user.service_provider_profile.banner_image.url }}');
-                background-size:cover;background-position:center;background-repeat:no-repeat;"
-         {% endif %}>
+        {% with banner=user.service_provider_profile.banner_image|default:user.banner_image %}
+        <div class="pf-banner"
+            {% if banner %}
+            style="background-image:url('{{ banner.url }}');
+                background-size:cover;
+                background-position:center;
+                background-repeat:no-repeat;"
+            {% endif %}>
+        {% endwith %}
         <div class="pe-header-overlay"></div>
     </div>
 
