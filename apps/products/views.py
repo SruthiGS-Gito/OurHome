@@ -438,7 +438,7 @@ def submit_review(request, slug):
         reviewer_type=_reviewer_type_for(request.user),
         climate_type=request.POST.get('climate_type', ''),
         use_case=request.POST.get('use_case', ''),
-        is_approved=True,    # Auto-approved for demo purposes
+        is_approved=False,    # Auto-approved for demo purposes
     )
 
     from django.contrib import messages
