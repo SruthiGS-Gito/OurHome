@@ -69,6 +69,8 @@ def dashboard_view(request):
         except ServiceProviderProfile.DoesNotExist:
             # Provider signed up but profile was never created — redirect to complete it
             return redirect('profile_complete')
+        # Featured images first, then newest — used by the portfolio grid in the template
+        context['portfolio_images'] = request.user.portfolio_images.order_by('-featured', '-created_at')
     else:
         # Homeowner — real activity counts and info card data
         from apps.products.models import ViewHistory, SavedMaterial
@@ -784,9 +786,8 @@ def provider_profile_view(request, username):
         messages.info(request, 'This profile is pending verification.')
         return redirect('home')
 
-    # Portfolio images
-    all_portfolio = provider_user.portfolio_images.all()
-    featured_portfolio = all_portfolio.filter(featured=True)[:3]
+    # Portfolio images — featured items first, then newest first within each group
+    all_portfolio = provider_user.portfolio_images.order_by('-featured', '-created_at')
 
     is_own_profile = request.user.is_authenticated and request.user == provider_user
 
@@ -830,10 +831,9 @@ def provider_profile_view(request, username):
                 messages.error(request, 'Please fill in all required fields.')
 
     return render(request, 'users/provider_profile.html', {
-        'profile_user':   provider_user,
+        'profile_user':     provider_user,
         'provider_profile': profile,
-        'all_portfolio':  all_portfolio,
-        'featured_portfolio': featured_portfolio,
-        'inquiry_sent':   inquiry_sent,
-        'is_own_profile': is_own_profile,
+        'all_portfolio':    all_portfolio,
+        'inquiry_sent':     inquiry_sent,
+        'is_own_profile':   is_own_profile,
     })
