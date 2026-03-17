@@ -1,38 +1,95 @@
 {% extends 'base.html' %}
-{% block title %}About OurHome — Kerala's Construction Platform{% endblock %}
+{% block title %}About OurHome — Kerala's Construction Intelligence Platform{% endblock %}
 {% block content %}
-<div style="max-width:800px;margin:80px auto 120px;padding:0 24px;">
-  <h1 style="font-size:36px;font-weight:900;color:var(--black);margin-bottom:16px;">About OurHome</h1>
-  <p style="font-size:18px;color:var(--gray-600);line-height:1.7;margin-bottom:32px;">
-    OurHome is Kerala's first climate-smart construction platform. We help homeowners build right — choosing
-    verified materials suited to their climate, finding trusted contractors, and verifying contractor quotes
-    using AI.
+<div style="max-width:860px;margin:80px auto 120px;padding:0 24px;">
+
+  <h1 style="font-size:38px;font-weight:900;color:var(--black);margin-bottom:8px;">About OurHome</h1>
+  <p style="font-size:13px;color:var(--gray-500);margin-bottom:32px;">Kerala's Construction Intelligence Platform</p>
+
+  <!-- What is OurHome -->
+  <p style="font-size:18px;color:var(--gray-700);line-height:1.8;margin-bottom:40px;">
+    OurHome is Kerala's first climate-smart construction platform — built to bring transparency,
+    verified expertise, and AI-powered tools to the state's fragmented construction industry.
+    We help homeowners choose the right materials for their climate, discover verified contractors
+    and architects, and catch overcharges in contractor quotes before a single brick is laid.
   </p>
+
+  <!-- The Problem -->
   <div style="background:linear-gradient(135deg,#fdf4ff,#fff0f6);border-radius:16px;padding:32px;margin-bottom:32px;">
-    <h2 style="font-size:22px;font-weight:800;color:var(--black);margin-bottom:12px;">Our Mission</h2>
-    <p style="color:var(--gray-700);line-height:1.7;">
-      Kerala loses thousands of crores every year to construction mistakes — wrong materials for the climate,
-      overpriced quotes, unverified contractors. OurHome fixes all three in one platform.
+    <h2 style="font-size:22px;font-weight:800;color:var(--black);margin-bottom:12px;">The Problem We Solve</h2>
+    <p style="color:var(--gray-700);line-height:1.7;margin-bottom:12px;">
+      Kerala's construction sector is worth thousands of crores — yet most homeowners build with
+      almost no reliable information. Contractors quote inflated prices, materials get chosen based
+      on brand familiarity rather than climate suitability, and there is no trustworthy way to
+      discover or verify the professionals you hire.
     </p>
+    <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;">
+      <li style="display:flex;gap:10px;align-items:flex-start;color:var(--gray-700);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" style="flex-shrink:0;margin-top:3px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        OPC cement used in coastal zones corrodes faster, leading to cracked structures within a decade.
+      </li>
+      <li style="display:flex;gap:10px;align-items:flex-start;color:var(--gray-700);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" style="flex-shrink:0;margin-top:3px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Contractors routinely overcharge on materials by 15–30% above market rates.
+      </li>
+      <li style="display:flex;gap:10px;align-items:flex-start;color:var(--gray-700);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" style="flex-shrink:0;margin-top:3px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        There is no centralised, verified directory of contractors, architects, and designers.
+      </li>
+    </ul>
   </div>
-  <h2 style="font-size:22px;font-weight:800;color:var(--black);margin-bottom:16px;">What We Offer</h2>
-  <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:12px;margin-bottom:40px;">
-    <li style="display:flex;gap:12px;align-items:flex-start;">
+
+  <!-- What We Offer -->
+  <h2 style="font-size:22px;font-weight:800;color:var(--black);margin-bottom:16px;">What OurHome Offers</h2>
+  <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:14px;margin-bottom:40px;">
+    <li style="display:flex;gap:14px;align-items:flex-start;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" style="flex-shrink:0;margin-top:2px;"><polyline points="20 6 9 17 4 12"/></svg>
-      <span style="color:var(--gray-700);">Climate-smart materials catalog — 30+ verified building materials with climate suitability filters</span>
+      <div>
+        <strong style="color:var(--black);">Climate-Smart Materials Catalog</strong>
+        <p style="color:var(--gray-600);margin:2px 0 0;font-size:0.92rem;">30+ verified building materials with 5-zone climate suitability filters — coastal, hot &amp; dry, heavy rainfall, cold &amp; hilly, cyclone-prone. Prices sourced from Kerala PWD SOR 2024.</p>
+      </div>
     </li>
-    <li style="display:flex;gap:12px;align-items:flex-start;">
+    <li style="display:flex;gap:14px;align-items:flex-start;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" style="flex-shrink:0;margin-top:2px;"><polyline points="20 6 9 17 4 12"/></svg>
-      <span style="color:var(--gray-700);">Verified service providers — OurHome-verified contractors, architects, and interior designers</span>
+      <div>
+        <strong style="color:var(--black);">AI Bill Analyzer</strong>
+        <p style="color:var(--gray-600);margin:2px 0 0;font-size:0.92rem;">Upload your contractor's quote as a PDF or photo. Our AI (powered by Groq's llama-3.3-70b) reads every line item, checks it against Kerala market rates, flags overcharges, and generates a negotiation script.</p>
+      </div>
     </li>
-    <li style="display:flex;gap:12px;align-items:flex-start;">
+    <li style="display:flex;gap:14px;align-items:flex-start;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" style="flex-shrink:0;margin-top:2px;"><polyline points="20 6 9 17 4 12"/></svg>
-      <span style="color:var(--gray-700);">AI Bill Analyzer — upload your contractor's quote and catch overcharges instantly</span>
+      <div>
+        <strong style="color:var(--black);">Verified Service Provider Directory</strong>
+        <p style="color:var(--gray-600);margin:2px 0 0;font-size:0.92rem;">Browse OurHome-verified contractors, architects, and interior designers with portfolio photos, project history, specializations, and direct contact/inquiry forms.</p>
+      </div>
+    </li>
+    <li style="display:flex;gap:14px;align-items:flex-start;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" style="flex-shrink:0;margin-top:2px;"><polyline points="20 6 9 17 4 12"/></svg>
+      <div>
+        <strong style="color:var(--black);">Personalised Recommendations</strong>
+        <p style="color:var(--gray-600);margin:2px 0 0;font-size:0.92rem;">Based on your location, OurHome automatically surfaces the materials best suited to your climate zone — no manual filtering needed.</p>
+      </div>
     </li>
   </ul>
-  <p style="font-size:14px;color:var(--gray-500);">
-    OurHome is a functional prototype. Commercial launch planned for Q3 2026.
+
+  <!-- Team -->
+  <div style="background:#f8fafc;border-radius:16px;padding:32px;margin-bottom:32px;">
+    <h2 style="font-size:22px;font-weight:800;color:var(--black);margin-bottom:12px;">The Team</h2>
+    <p style="color:var(--gray-700);line-height:1.7;margin-bottom:8px;">
+      OurHome was designed and built by final-year B.Tech Computer Science &amp; Engineering students
+      at <strong>Sree Buddha College of Engineering, Pattoor</strong> (APJ Abdul Kalam Technological University, KTU), graduating in 2026.
+    </p>
+    <p style="color:var(--gray-700);line-height:1.7;">
+      The project demonstrates a production-grade, AI-integrated full-stack web application using
+      Django, MySQL, HTMX, Cloudinary, and the Groq AI API — built as an academic capstone
+      project with real-world applicability.
+    </p>
+  </div>
+
+  <p style="font-size:14px;color:var(--gray-500);line-height:1.7;">
+    OurHome is currently a functional academic prototype. Commercial launch planned for Q3 2026.
     For enquiries: <a href="mailto:hello@ourhome.in" style="color:var(--primary);">hello@ourhome.in</a>
   </p>
+
 </div>
 {% endblock %}

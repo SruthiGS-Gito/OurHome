@@ -30,7 +30,6 @@
     <nav class="navbar" id="navbar">
         <div class="navbar-container">
             <a href="{% url 'home' %}" class="logo">
-                <span class="logo-icon">🏠</span>
                 <span class="logo-text">OurHome</span>
             </a>
             
@@ -58,9 +57,18 @@
                 <div id="search-results"></div>
             </form>
 
+            <!-- Hamburger toggle — visible only on mobile (CSS hides on desktop) -->
+            <button class="hamburger-btn" id="hamburgerBtn" type="button" aria-label="Open menu">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <line x1="3" y1="12" x2="21" y2="12"/>
+                    <line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
+            </button>
+
             <!-- Navigation Links — changes based on login state -->
             <!-- nav-active class highlights the current page's link -->
-            <div class="nav-links">
+            <div class="nav-links" id="navLinks">
                 <a href="{% url 'product_list' %}"
                    class="nav-link {% if request.resolver_match.url_name == 'product_list' or request.resolver_match.url_name == 'product_detail' %}nav-active{% endif %}">
                    Browse Materials</a>
@@ -265,6 +273,21 @@
                 searchInput.value = '';
             }
         });
+
+        // ── Hamburger mobile menu ────────────────────────
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const navLinks = document.getElementById('navLinks');
+        if (hamburgerBtn && navLinks) {
+            hamburgerBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                navLinks.classList.toggle('mobile-open');
+            });
+            document.addEventListener('click', function (e) {
+                if (!navLinks.contains(e.target) && e.target !== hamburgerBtn) {
+                    navLinks.classList.remove('mobile-open');
+                }
+            });
+        }
 
         // ── User avatar dropdown ─────────────────────────
         const userMenu    = document.getElementById('userMenu');

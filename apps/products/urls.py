@@ -23,6 +23,7 @@ urlpatterns = [
     path('materials/<slug:slug>/', views.product_detail_view, name='product_detail'),
     path('materials/save/<slug:slug>/', views.toggle_save, name='toggle_save'),
     path('saved/', views.saved_materials_view, name='saved_materials'),
+    path('saved/export/csv/', views.export_saved_materials_csv, name='export_saved_csv'),
     path('saved/remove/<slug:slug>/', views.remove_saved, name='remove_saved'),
     path('materials/<slug:slug>/review/', views.submit_review, name='submit_review'),
     path('material-analyzer/', views.material_analyzer_view, name='material_analyzer'),

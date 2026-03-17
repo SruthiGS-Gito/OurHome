@@ -1752,3 +1752,101 @@ button.btn-save svg {
     align-items: flex-start;
   }
 }
+
+/* ══════════════════════════════════════════════════
+   MOBILE RESPONSIVE — products.css (max-width: 768px)
+   Myntra-style horizontal product cards
+   ══════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+    /* Hide sidebar filter — add Filters button via template or show inline */
+    .filter-sidebar {
+        display: none;
+    }
+    .filter-sidebar.mobile-open {
+        display: block;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: #fff;
+        z-index: 2000;
+        overflow-y: auto;
+        padding: 20px;
+    }
+
+    /* Full-width product area */
+    .catalog-layout {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Mobile filter toggle button */
+    .mobile-filter-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 16px;
+        background: #fff;
+        border: 1.5px solid var(--gray-200);
+        border-radius: 10px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: var(--gray-700);
+        cursor: pointer;
+        margin-bottom: 16px;
+    }
+
+    /* Myntra-style horizontal product card */
+    .product-card {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: stretch;
+        padding: 0 !important;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .product-card-img,
+    .product-card img {
+        width: 120px !important;
+        min-width: 120px !important;
+        height: 120px !important;
+        object-fit: cover;
+        border-radius: 0 !important;
+        flex-shrink: 0;
+    }
+    .product-card-body,
+    .product-card-info {
+        flex: 1;
+        padding: 12px 14px !important;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 3px;
+    }
+    .product-card-category {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        font-weight: 700;
+        color: var(--primary);
+    }
+    .product-card-name,
+    .product-card h3 {
+        font-size: 0.9rem !important;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+    .product-card-brand {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+    }
+    .product-card-price {
+        font-size: 0.95rem;
+        font-weight: 900;
+    }
+    .product-card-actions {
+        display: block;
+        width: 100%;
+        margin-top: 8px;
+    }
+}
+
+/* Hide mobile filter button on desktop */
+.mobile-filter-btn { display: none; }

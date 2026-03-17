@@ -838,3 +838,48 @@
     padding: 20px 10px 16px;
   }
 }
+/* ═══════════════════════════════════════════════
+   MOBILE RESPONSIVE — home.css (max-width: 768px)
+   ═══════════════════════════════════════════════ */
+@media (max-width: 768px) {
+    /* Hero CTA buttons: stack vertically, full width */
+    .hero-actions,
+    .banner-actions {
+        flex-direction: column !important;
+        gap: 10px !important;
+        width: 100%;
+    }
+    .hero-actions a,
+    .banner-actions a,
+    .hero-cta-btn {
+        width: 100% !important;
+        justify-content: center !important;
+        text-align: center;
+    }
+
+    /* Climate cards: 2-column grid (not 5) */
+    .climate-cards-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px;
+    }
+
+    /* Featured contractors and designers: 1 column */
+    .contractor-grid,
+    .designer-grid,
+    .featured-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Reduce hero padding on mobile */
+    .hero-section,
+    .home-hero {
+        padding: 36px 16px 40px !important;
+    }
+    .hero-title {
+        font-size: 1.8rem !important;
+        line-height: 1.2;
+    }
+    .hero-subtitle {
+        font-size: 0.95rem !important;
+    }
+}

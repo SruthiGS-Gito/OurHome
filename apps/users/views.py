@@ -224,40 +224,19 @@ def profile_edit_view(request):
 
 def public_profile_view(request, user_id):
     """
-    View a service provider's PUBLIC profile (visible to anyone).
-
-    SECURITY:
-    - Only VERIFIED (approved) providers are shown to the public
-    - Admin users can see unverified profiles (for review purposes)
-    - Non-providers redirect to home (customers don't have public profiles)
-
-    get_object_or_404:
-    - Tries to find the User with this ID
-    - If not found, returns a 404 error page (instead of crashing)
-
-    URL: /provider/<user_id>/
-    TEMPLATE: templates/users/public_profile.html
+    Legacy URL /provider/<user_id>/ — permanently redirects to the typed
+    profile URL (/contractor/<username>/, /architect/<username>/, etc.).
     """
-    provider_user = get_object_or_404(User, id=user_id)
-
-    # Only service providers have public profiles
-    if not provider_user.is_service_provider:
-        return redirect('home')
-
-    try:
-        profile = provider_user.service_provider_profile
-    except ServiceProviderProfile.DoesNotExist:
-        return redirect('home')
-
-    # Only show verified providers to non-admin users
-    if not profile.is_verified and not (request.user.is_authenticated and request.user.is_staff):
-        messages.info(request, 'This profile is pending verification.')
-        return redirect('home')
-
-    return render(request, 'users/public_profile.html', {
-        'profile_user': provider_user,
-        'provider_profile': profile,
-    })
+    user = get_object_or_404(User, pk=user_id, is_active=True)
+    type_map = {
+        'contractor':        'contractor',
+        'architect':         'architect',
+        'interior_designer': 'designer',
+    }
+    url_type = type_map.get(user.user_type)
+    if url_type:
+        return redirect(f'/{url_type}/{user.username}/', permanent=True)
+    return redirect('/')
 
 
 def service_provider_signup_view(request):
@@ -341,7 +320,6 @@ def profile_complete_view(request):
     return render(request, 'users/profile_complete.html', {'form': form})
 
 
-@login_required
 def search_view(request):
     """
     Search across service providers (and later, materials).

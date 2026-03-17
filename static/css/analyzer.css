@@ -1640,3 +1640,61 @@
 }
 .az-send-btn:hover { opacity: 0.85; }
 .az-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ══════════════════════════════════════════════════
+   MOBILE RESPONSIVE — analyzer.css (max-width: 768px)
+   ══════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+    /* Chat interface: fill viewport height */
+    .az-chat-window,
+    .az-messages {
+        height: calc(100dvh - 220px) !important;
+        min-height: 300px;
+    }
+
+    /* Input bar: full width, larger touch targets */
+    .az-input-bar {
+        padding: 10px 12px !important;
+        gap: 8px;
+    }
+    .az-chat-input {
+        font-size: 16px !important; /* prevent iOS zoom */
+        min-height: 40px;
+    }
+    .az-send-btn {
+        width: 46px !important;
+        height: 46px !important;
+        border-radius: 14px !important;
+    }
+
+    /* Suggestion chips: horizontal scroll */
+    .az-suggestions,
+    .az-chips {
+        flex-wrap: nowrap !important;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        gap: 8px;
+    }
+    .az-chip,
+    .az-suggestion-chip {
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* Mode selector cards: stack vertically */
+    .az-mode-selector {
+        flex-direction: column !important;
+        gap: 12px;
+    }
+    .az-mode-card {
+        width: 100% !important;
+    }
+
+    /* Manual mode item table: scrollable horizontally */
+    .az-items-table-wrap {
+        overflow-x: auto;
+    }
+    .az-items-table {
+        min-width: 560px;
+    }
+}

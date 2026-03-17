@@ -1665,3 +1665,78 @@
         grid-template-columns: 1fr !important;
     }
 }
+
+/* ════════════════════════════════════════════════════
+   MOBILE RESPONSIVE — directory.css (max-width: 768px)
+   ════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+    /* Provider grid → single-column list */
+    .dir-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px;
+    }
+
+    /* Horizontal list-style provider card */
+    .dir-card {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 16px !important;
+    }
+
+    /* Avatar: 72px circle on left */
+    .dir-card-avatar,
+    .dir-avatar {
+        width: 72px !important;
+        height: 72px !important;
+        min-width: 72px;
+        border-radius: 50% !important;
+        flex-shrink: 0;
+        font-size: 1.4rem !important;
+    }
+
+    /* Right content */
+    .dir-card-body {
+        flex: 1;
+        min-width: 0;
+    }
+    .dir-card-name {
+        font-size: 0.95rem !important;
+        font-weight: 800;
+    }
+    .dir-card-role {
+        font-size: 0.78rem;
+        color: var(--gray-500);
+    }
+    .dir-card-meta {
+        font-size: 0.75rem;
+        color: var(--gray-600);
+        margin-top: 2px;
+    }
+
+    /* Hide specialization tags on mobile to save space */
+    .dir-card-tags,
+    .dir-spec-tags {
+        display: none !important;
+    }
+
+    /* View Profile → small arrow link, not full button */
+    .dir-card-btn,
+    .dir-view-btn {
+        font-size: 0.78rem !important;
+        padding: 6px 10px !important;
+        white-space: nowrap;
+    }
+
+    /* Filter bar: horizontal scroll on mobile */
+    .dir-filters {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 8px;
+        padding-bottom: 4px;
+    }
+    .dir-filters select {
+        min-width: 140px;
+    }
+}

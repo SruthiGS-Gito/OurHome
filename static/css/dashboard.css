@@ -844,3 +844,48 @@
   .dashboard-info-grid { grid-template-columns: 1fr; }
   .dashboard-info-card { gap: 0; }
 }
+
+/* ════════════════════════════════════════════════════
+   MOBILE RESPONSIVE — dashboard.css (max-width: 768px)
+   ════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+    /* Stat cards: full single column */
+    .db-stats-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px;
+    }
+
+    /* Portfolio: single column */
+    .db-portfolio-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px;
+    }
+
+    /* Action cards: single column */
+    .db-actions-grid,
+    .dashboard-action-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Welcome banner: smaller font */
+    .db-welcome-name {
+        font-size: 1.4rem !important;
+    }
+    .db-hero {
+        padding: 28px 16px 36px !important;
+    }
+    .db-hero-inner {
+        flex-direction: column !important;
+        gap: 16px;
+    }
+    .db-hero-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+    }
+    .db-hero-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

@@ -21,7 +21,7 @@ from pathlib import Path
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Sum, Case, When, IntegerField
 from django.http import HttpResponse, StreamingHttpResponse, JsonResponse, HttpResponseNotAllowed
 from django.urls import reverse
 from django.shortcuts import render, get_object_or_404, redirect
@@ -41,9 +41,9 @@ _SPEC_LABELS = dict(ServiceProviderProfile.SPECIALIZATION_CHOICES)
 
 
 # ──────────────────────────────────────────────────────────────
-# Anthropic / AI Bill Analyzer constants
+# Groq / AI Bill Analyzer constants
 # ──────────────────────────────────────────────────────────────
-_ANTHROPIC_SYSTEM = """You are OurHome's AI Material Advisor — an expert, honest assistant \
+_GROQ_SYSTEM = """You are OurHome's AI Material Advisor — an expert, honest assistant \
 specialised in Kerala's construction industry.
 
 Your purpose: Help homeowners in Kerala analyse contractor quotes/bills, understand material \
@@ -71,40 +71,39 @@ SOLUTION or ALTERNATIVE — never flag without guiding.
 • Use markdown — the interface renders it.
 • When uncertain about a price, say so honestly rather than guessing."""
 
-_BILL_INITIAL_PROMPT = """Please analyse this contractor quote/bill carefully and completely.
+_BILL_INITIAL_PROMPT = """Analyse this contractor bill strictly and completely. Follow this exact structure:
 
 ## Overall Verdict
-One clear sentence: is this quote fair, overpriced, or does it contain serious problems?
+One sentence: FAIR / OVERPRICED / SERIOUSLY OVERPRICED — with total potential savings in ₹.
 
-## Items Found
-List every line item exactly as written in the bill.
+## Line Items Found
+List every item exactly as written: name · quantity · unit · quoted rate · quoted total
 
-## Price Analysis
-For each item state: Kerala market rate · verdict (✅ FAIR / ⚠️ HIGH / 🚫 ABOVE MRP) · \
-exact saving or overcharge amount.
+## Price Analysis — Every Item
+For each item, on one line:
+**[Item]**: Market rate ₹X–₹Y/[unit] → Quoted ₹Z/[unit] → [✅ FAIR / ⚠️ HIGH / 🚫 ILLEGAL] → Overcharge: ₹[exact amount] (or "Within range")
 
-## Climate Suitability
-Which materials are unsuitable for Kerala's climate? For each, suggest a better alternative \
-with its typical price.
+Rules:
+- ALWAYS calculate exact overcharge in ₹ = (quoted − market_max) × quantity
+- If quoted ≤ market_max: mark FAIR, overcharge = ₹0
+- If quoted > market_max but ≤ MRP: mark HIGH
+- If quoted > MRP: mark ILLEGAL
+
+## Climate Suitability (Kerala)
+For each item: ✅ Suitable / ⚠️ Caution / 🚫 Avoid — one line reason + cheaper alternative with ₹ price
 
 ## Arithmetic Check
-Verify all calculations. Flag any errors with the correct figures.
+Verify every line total = quantity × rate. Flag any errors with correct figures.
 
-## Solutions & Recommendations
-For EVERY issue found, give a specific solution, alternative product or price to negotiate. \
-Explain the impact.
+## Negotiation Script
+For each overpriced item, provide exact negotiation language:
+"For [item], market rate is ₹X/[unit]. I am willing to pay ₹Y total. Please revise."
 
 ## Final Summary
 - Total quoted: ₹X
 - Fair market total: ₹Y
-- Potential savings: ₹Z
-- Top 3 action items
-
-Format rules:
-- Use ✅ for FAIR, ⚠️ for HIGH, 🚫 for ILLEGAL/AVOID
-- Keep each item to ONE line maximum
-- Be concise — homeowners need quick decisions, not essays
-- For every ⚠️ HIGH item, add one line: 💡 Switch to: [alternative] at ₹X"""
+- You are overpaying: ₹Z (N%)
+- Top 3 actions: numbered list"""
 
 
 # Maps URL query param values → human-readable labels.
@@ -145,17 +144,24 @@ def home_view(request):
         .order_by('-total_reviews')[:4]
     )
 
-    # Climate selector: one card per climate zone with live product count
+    # Climate selector: one card per climate zone with live product count.
+    # Single aggregation query instead of 5 separate .count() calls.
+    climate_counts = Product.objects.filter(is_active=True).aggregate(
+        hot_dry=Sum(Case(When(hot_dry=True, then=1), default=0, output_field=IntegerField())),
+        coastal_humid=Sum(Case(When(coastal_humid=True, then=1), default=0, output_field=IntegerField())),
+        heavy_rainfall=Sum(Case(When(heavy_rainfall=True, then=1), default=0, output_field=IntegerField())),
+        cold_hilly=Sum(Case(When(cold_hilly=True, then=1), default=0, output_field=IntegerField())),
+        cyclone_prone=Sum(Case(When(cyclone_prone=True, then=1), default=0, output_field=IntegerField())),
+    )
     climate_cards = []
     for key, label in CLIMATE_FILTERS.items():
         emoji, regions = _CLIMATE_META[key]
-        count = Product.objects.filter(is_active=True, **{key: True}).count()
         climate_cards.append({
             'key':     key,
             'label':   label,
             'emoji':   emoji,
             'regions': regions,
-            'count':   count,
+            'count':   climate_counts.get(key) or 0,
         })
 
     # Top 4 contractors and designers for the home page showcase
@@ -200,7 +206,6 @@ def home_view(request):
     })
 
 
-@login_required
 def product_list_view(request):
     """
     URL: /materials/
@@ -498,7 +503,7 @@ def bill_upload_view(request):
         resp = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
-                {"role": "system", "content": _ANTHROPIC_SYSTEM},
+                {"role": "system", "content": _GROQ_SYSTEM},
                 {"role": "user", "content": _BILL_INITIAL_PROMPT},
             ],
             max_tokens=3000,
@@ -562,7 +567,7 @@ def bill_chat_view(request):
             client = Groq(api_key=settings.GROQ_API_KEY)
 
             # Convert history to Groq's OpenAI-compatible messages format
-            messages = [{"role": "system", "content": _ANTHROPIC_SYSTEM}]
+            messages = [{"role": "system", "content": _GROQ_SYSTEM}]
             for msg in full_history:
                 role = 'user' if msg['role'] == 'user' else 'assistant'
                 messages.append({"role": role, "content": msg['text']})
@@ -836,6 +841,55 @@ def saved_materials_view(request):
         .order_by('-saved_at')
     )
     return render(request, 'products/saved_materials.html', {'saved': saved})
+
+
+@login_required
+def export_saved_materials_csv(request):
+    """GET /saved/export/csv/ — download saved materials as a CSV file."""
+    import csv
+    from django.http import HttpResponse
+
+    saved = (
+        SavedMaterial.objects
+        .filter(user=request.user)
+        .select_related('product')
+        .order_by('product__category', 'product__name')
+    )
+
+    response = HttpResponse(content_type='text/csv')
+    filename = f"OurHome_Materials_{timezone.now().strftime('%d%b%Y')}.csv"
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+    writer = csv.writer(response)
+    writer.writerow([
+        'Category', 'Product Name', 'Brand', 'Unit',
+        'Market Price (Rs)', 'MRP (Rs)', 'Climate Suitability',
+        'IS Standard', 'Saved On', 'Notes'
+    ])
+
+    for item in saved:
+        p = item.product
+        climate = []
+        if p.coastal_humid:  climate.append('Coastal')
+        if p.heavy_rainfall: climate.append('Rainfall')
+        if p.hot_dry:        climate.append('Hot/Dry')
+        if p.cold_hilly:     climate.append('Cold/Hilly')
+        if p.cyclone_prone:  climate.append('Cyclone')
+
+        writer.writerow([
+            p.get_category_display(),
+            p.name,
+            p.brand,
+            p.unit,
+            str(p.price),
+            str(p.mrp),
+            ', '.join(climate) if climate else 'All zones',
+            p.is_code or '-',
+            item.saved_at.strftime('%d %b %Y'),
+            item.notes or '',
+        ])
+
+    return response
 
 
 @login_required

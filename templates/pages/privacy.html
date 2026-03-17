@@ -3,29 +3,66 @@
 {% block content %}
 <div style="max-width:800px;margin:80px auto 120px;padding:0 24px;">
   <h1 style="font-size:36px;font-weight:900;color:var(--black);margin-bottom:8px;">Privacy Policy</h1>
-  <p style="font-size:13px;color:var(--gray-500);margin-bottom:32px;">Last updated: March 2026 — Prototype version</p>
+  <p style="font-size:13px;color:var(--gray-500);margin-bottom:40px;">Last updated: March 2026 — OurHome v1.0 prototype</p>
 
-  <div style="display:flex;flex-direction:column;gap:28px;color:var(--gray-700);line-height:1.7;">
+  <div style="display:flex;flex-direction:column;gap:32px;color:var(--gray-700);line-height:1.8;">
+
     <div>
-      <h2 style="font-size:18px;font-weight:700;color:var(--black);margin-bottom:8px;">1. Data We Collect</h2>
-      <p>Account information (name, email, phone), location data for service matching, and contractor quotes uploaded to the AI Analyzer. Uploaded bills are deleted from our servers within 24 hours.</p>
+      <h2 style="font-size:18px;font-weight:700;color:var(--black);margin-bottom:8px;">1. What Data We Collect</h2>
+      <p>When you create an account, we collect your <strong>name, email address, phone number</strong>, and <strong>location</strong> (city, district, state) to provide personalised material recommendations and service provider matching.</p>
+      <p style="margin-top:8px;">If you are a service provider, we additionally collect your <strong>business name, years of experience, specializations, pricing range, and verification documents</strong> (government-issued ID, professional license, portfolio) to establish your verified listing.</p>
+      <p style="margin-top:8px;">If you use the AI Bill Analyzer, your uploaded contractor quotes (PDF or image) are <strong>temporarily stored on our server for the duration of your session</strong> and deleted automatically when you clear the analysis or close your session — always within 24 hours.</p>
     </div>
+
     <div>
-      <h2 style="font-size:18px;font-weight:700;color:var(--black);margin-bottom:8px;">2. How We Use Your Data</h2>
-      <p>To provide the platform services (materials catalog, directory, AI analyzer), to verify service provider identity, and to improve our recommendations. We do not sell your data to third parties.</p>
+      <h2 style="font-size:18px;font-weight:700;color:var(--black);margin-bottom:8px;">2. How Your Data Is Stored</h2>
+      <p>Your account data and activity are stored in a <strong>MySQL database</strong> hosted on Railway's cloud infrastructure. Profile photos, portfolio images, and verification documents are stored on <strong>Cloudinary's CDN</strong> (cloud.cloudinary.com) — a GDPR-compliant media hosting service.</p>
+      <p style="margin-top:8px;">All data is transmitted over <strong>HTTPS (TLS encryption)</strong>. We do not store plaintext passwords — Django's password hashing (PBKDF2-SHA256) is used.</p>
     </div>
+
     <div>
-      <h2 style="font-size:18px;font-weight:700;color:var(--black);margin-bottom:8px;">3. Data Security</h2>
-      <p>All data is encrypted in transit (HTTPS) and at rest. Provider verification documents are stored securely and accessible only by our admin team.</p>
+      <h2 style="font-size:18px;font-weight:700;color:var(--black);margin-bottom:8px;">3. Who Can See What</h2>
+      <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:8px;">
+        <li style="display:flex;gap:10px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" style="flex-shrink:0;margin-top:3px;"><polyline points="20 6 9 17 4 12"/></svg>
+          <span><strong>Service provider profiles</strong> (name, business info, portfolio, specializations) are publicly visible to all logged-in users on the directory pages.</span>
+        </li>
+        <li style="display:flex;gap:10px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" style="flex-shrink:0;margin-top:3px;"><polyline points="20 6 9 17 4 12"/></svg>
+          <span><strong>Inquiry contact details</strong> (name, email, phone, message) submitted via a provider's profile page are shared only with that specific provider — not with other users.</span>
+        </li>
+        <li style="display:flex;gap:10px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" style="flex-shrink:0;margin-top:3px;"><polyline points="20 6 9 17 4 12"/></svg>
+          <span><strong>Verification documents</strong> (ID proof, license) are accessible only by the OurHome admin team for verification purposes.</span>
+        </li>
+        <li style="display:flex;gap:10px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" style="flex-shrink:0;margin-top:3px;"><polyline points="20 6 9 17 4 12"/></svg>
+          <span><strong>Saved materials, browsing history, and reviews</strong> are private to your account.</span>
+        </li>
+      </ul>
     </div>
+
     <div>
-      <h2 style="font-size:18px;font-weight:700;color:var(--black);margin-bottom:8px;">4. Your Rights</h2>
-      <p>You may request deletion of your account and associated data at any time by emailing <a href="mailto:privacy@ourhome.in" style="color:var(--primary);">privacy@ourhome.in</a>.</p>
+      <h2 style="font-size:18px;font-weight:700;color:var(--black);margin-bottom:8px;">4. Third Parties</h2>
+      <p>We do <strong>not sell, rent, or trade your personal data</strong> to any third party. We use the following sub-processors to operate the platform:</p>
+      <ul style="margin-top:8px;padding-left:20px;display:flex;flex-direction:column;gap:4px;">
+        <li><strong>Railway</strong> — cloud hosting and database</li>
+        <li><strong>Cloudinary</strong> — media file storage and CDN</li>
+        <li><strong>Groq</strong> — AI processing for the Bill Analyzer (your uploaded bill is sent to Groq's API; Groq's <a href="https://groq.com/privacy-policy/" style="color:var(--primary);">privacy policy</a> applies)</li>
+      </ul>
     </div>
+
     <div>
-      <h2 style="font-size:18px;font-weight:700;color:var(--black);margin-bottom:8px;">5. Contact</h2>
+      <h2 style="font-size:18px;font-weight:700;color:var(--black);margin-bottom:8px;">5. Your Rights</h2>
+      <p>You may request <strong>deletion of your account and all associated data</strong> at any time by emailing <a href="mailto:privacy@ourhome.in" style="color:var(--primary);">privacy@ourhome.in</a>. We will process deletion requests within 7 business days.</p>
+      <p style="margin-top:8px;">You may also request a copy of the data we hold about you at the same address.</p>
+    </div>
+
+    <div>
+      <h2 style="font-size:18px;font-weight:700;color:var(--black);margin-bottom:8px;">6. Contact</h2>
       <p>For privacy-related questions: <a href="mailto:privacy@ourhome.in" style="color:var(--primary);">privacy@ourhome.in</a></p>
     </div>
+
   </div>
 </div>
 {% endblock %}
