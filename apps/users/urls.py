@@ -65,4 +65,9 @@ urlpatterns = [
 
     # Search — search across materials, contractors, architects, designers
     path('search/', views.search_view, name='search'),
+
+    # Inquiry system
+    path('send-inquiry/<str:username>/', views.send_inquiry_view, name='send_inquiry'),
+    path('inbox/', views.inquiry_inbox_view, name='inquiry_inbox'),
+    path('inbox/<int:pk>/', views.inquiry_detail_view, name='inquiry_detail'),
 ]

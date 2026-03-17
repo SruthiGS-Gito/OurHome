@@ -405,13 +405,14 @@ class ServiceInquiry(models.Model):
     provider = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='inquiries',
+        related_name='received_inquiries',
     )
 
     sender_name = models.CharField(max_length=200)
     sender_email = models.EmailField()
     sender_phone = models.CharField(max_length=15, blank=True)
     message = models.TextField()
+    is_read = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
 

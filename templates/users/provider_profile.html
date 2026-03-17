@@ -272,7 +272,7 @@
               {% endfor %}
             {% endif %}
 
-            <form method="post" class="pp-inquiry-form">
+            <form method="post" action="{% url 'send_inquiry' username=profile_user.username %}" class="pp-inquiry-form">
               {% csrf_token %}
               <div class="pp-form-grid">
                 <div class="pp-field">

@@ -71,6 +71,7 @@ def dashboard_view(request):
             return redirect('profile_complete')
         # Featured images first, then newest — used by the portfolio grid in the template
         context['portfolio_images'] = request.user.portfolio_images.order_by('-featured', '-created_at')
+        context['unread_count'] = request.user.received_inquiries.filter(is_read=False).count()
     else:
         # Homeowner — real activity counts and info card data
         from apps.products.models import ViewHistory, SavedMaterial
@@ -836,4 +837,94 @@ def provider_profile_view(request, username):
         'all_portfolio':    all_portfolio,
         'inquiry_sent':     inquiry_sent,
         'is_own_profile':   is_own_profile,
+    })
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# INQUIRY SYSTEM
+# ══════════════════════════════════════════════════════════════════════════════
+
+def send_inquiry_view(request, username):
+    """
+    Handles inquiry form POST from a provider's public profile.
+    URL: POST /send-inquiry/<username>/
+    Redirects back to the provider profile on success or error.
+    """
+    if request.method != 'POST':
+        return redirect('home')
+
+    provider_user = get_object_or_404(User, username=username, is_active=True)
+    if not provider_user.is_service_provider:
+        return redirect('home')
+
+    # Determine correct profile URL to redirect back to
+    type_map = {
+        'contractor': 'contractor_profile',
+        'architect': 'architect_profile',
+        'interior_designer': 'designer_profile',
+    }
+    profile_url_name = type_map.get(provider_user.user_type, 'home')
+    profile_url = f'/{provider_user.user_type.replace("interior_designer","designer")}/{username}/'
+
+    sender_name = request.POST.get('sender_name', '').strip()
+    sender_email = request.POST.get('sender_email', '').strip()
+    sender_phone = request.POST.get('sender_phone', '').strip()
+    message = request.POST.get('message', '').strip()
+
+    if sender_name and sender_email and message:
+        ServiceInquiry.objects.create(
+            provider=provider_user,
+            sender_name=sender_name,
+            sender_email=sender_email,
+            sender_phone=sender_phone,
+            message=message,
+        )
+        messages.success(
+            request,
+            f'Your inquiry has been sent to {provider_user.service_provider_profile.business_name}. '
+            'They will contact you within 1–2 business days.',
+        )
+    else:
+        messages.error(request, 'Please fill in all required fields.')
+
+    return redirect(profile_url)
+
+
+@login_required
+def inquiry_inbox_view(request):
+    """
+    Inbox for service providers — shows all inquiries they have received.
+    URL: /inbox/
+    TEMPLATE: templates/users/inquiry_inbox.html
+    """
+    if not request.user.is_service_provider:
+        return redirect('dashboard')
+
+    inquiries = request.user.received_inquiries.all()
+    unread_count = inquiries.filter(is_read=False).count()
+
+    return render(request, 'users/inquiry_inbox.html', {
+        'inquiries': inquiries,
+        'unread_count': unread_count,
+    })
+
+
+@login_required
+def inquiry_detail_view(request, pk):
+    """
+    View a single inquiry. Marks it as read on first visit.
+    URL: /inbox/<pk>/
+    TEMPLATE: templates/users/inquiry_detail.html
+    """
+    if not request.user.is_service_provider:
+        return redirect('dashboard')
+
+    inquiry = get_object_or_404(ServiceInquiry, pk=pk, provider=request.user)
+
+    if not inquiry.is_read:
+        inquiry.is_read = True
+        inquiry.save(update_fields=['is_read'])
+
+    return render(request, 'users/inquiry_detail.html', {
+        'inquiry': inquiry,
     })
