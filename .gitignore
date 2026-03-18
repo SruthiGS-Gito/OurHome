@@ -2,12 +2,17 @@
 .env
 .env.*
 *.env
+.env.local
+.env.*.local
+.env.production
+!.env.example
 
 # Python virtual environments
 myenv1/
 myenv2/
 venv/
 env/
+ENV/
 .venv/
 
 # Python bytecode
@@ -15,9 +20,13 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.pyc
+*.pyo
+*.pyd
+.Python
 
 # Django
 *.log
+local_settings.py
 db.sqlite3
 db.sqlite3-journal
 staticfiles/
@@ -25,6 +34,7 @@ media/
 
 # IDE / Editor
 .vscode/
+*.code-workspace
 .idea/
 *.swp
 *.swo
@@ -34,6 +44,7 @@ Thumbs.db
 
 # OS files
 Desktop.ini
+desktop.ini
 ehthumbs.db
 
 # Distribution
@@ -45,15 +56,43 @@ build/
 # Backup files
 *.bak
 *.backup
+*.orig
 
 # Claude Code (AI assistant config)
 .claude/
+CLAUDE.md
+.claudeignore
 
-# Local dev files
+# Local dev / utility scripts
 DEMO_CHECKLIST.md
 migrate_to_gemini.py
 patch_gemini_final.py
 fix_ourhome_ui.py
 config/settings.py.bak
+
+# Node (if frontend tooling added later)
+node_modules/
+npm-debug.log*
+
+# Pytest / test artifacts
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# Build artifacts
+*.egg-info/
+
+# Railway / deployment secrets
+railway.toml
+
+# Jupyter
+*.ipynb
+.ipynb_checkpoints/
+
+# Temporary files
+*.tmp
+*.temp
+temp_bills/
 
 *.json
