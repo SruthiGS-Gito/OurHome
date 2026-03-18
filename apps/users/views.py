@@ -29,7 +29,8 @@ from django.db.models import Avg, Count, Q as DQ, Case, When, IntegerField
 from allauth.account.utils import complete_signup
 from allauth.account import app_settings as allauth_settings
 
-from .models import User, ServiceProviderProfile, PortfolioImage, ServiceInquiry
+from django.views.decorators.http import require_POST
+from .models import User, ServiceProviderProfile, PortfolioImage, ServiceInquiry, InquiryReply
 from apps.products.models import Product
 from .forms import (
     UserProfileForm,
@@ -86,6 +87,10 @@ def dashboard_view(request):
         )
         context['inquiry_count'] = ServiceInquiry.objects.filter(
             sender_email=request.user.email
+        ).count()
+        context['customer_unread_replies'] = InquiryReply.objects.filter(
+            inquiry__sender_email=request.user.email,
+            is_read=False,
         ).count()
 
         # Climate zone: default to Coastal & Humid for Kerala users
@@ -912,7 +917,7 @@ def inquiry_inbox_view(request):
 @login_required
 def inquiry_detail_view(request, pk):
     """
-    View a single inquiry. Marks it as read on first visit.
+    View a single inquiry + reply thread. Marks it as read on first visit.
     URL: /inbox/<pk>/
     TEMPLATE: templates/users/inquiry_detail.html
     """
@@ -920,11 +925,65 @@ def inquiry_detail_view(request, pk):
         return redirect('dashboard')
 
     inquiry = get_object_or_404(ServiceInquiry, pk=pk, provider=request.user)
+    inquiry.is_read = True
+    inquiry.save(update_fields=['is_read'])
 
-    if not inquiry.is_read:
-        inquiry.is_read = True
-        inquiry.save(update_fields=['is_read'])
+    replies = inquiry.replies.select_related('sender').order_by('created_at')
 
     return render(request, 'users/inquiry_detail.html', {
         'inquiry': inquiry,
+        'replies': replies,
+    })
+
+
+@login_required
+@require_POST
+def send_reply_view(request, pk):
+    """
+    POST-only view — provider sends a reply to an inquiry.
+    URL: POST /inbox/<pk>/reply/
+    """
+    inquiry = get_object_or_404(ServiceInquiry, pk=pk, provider=request.user)
+    message = request.POST.get('message', '').strip()
+
+    if not message:
+        messages.error(request, 'Reply cannot be empty.')
+        return redirect('inquiry_detail', pk=pk)
+
+    InquiryReply.objects.create(
+        inquiry=inquiry,
+        sender=request.user,
+        message=message,
+    )
+    inquiry.is_read = True
+    inquiry.save(update_fields=['is_read'])
+    messages.success(request, 'Reply sent successfully.')
+    return redirect('inquiry_detail', pk=pk)
+
+
+@login_required
+def my_replies_view(request):
+    """
+    Customer view — shows all replies received from professionals.
+    URL: /my-replies/
+    TEMPLATE: templates/users/my_replies.html
+    """
+    inquiries_with_replies = (
+        ServiceInquiry.objects
+        .filter(sender_email=request.user.email, replies__isnull=False)
+        .prefetch_related('replies__sender', 'provider')
+        .distinct()
+        .order_by('-created_at')
+    )
+
+    unread_qs = InquiryReply.objects.filter(
+        inquiry__sender_email=request.user.email,
+        is_read=False,
+    )
+    unread_count = unread_qs.count()
+    unread_qs.update(is_read=True)
+
+    return render(request, 'users/my_replies.html', {
+        'inquiries_with_replies': inquiries_with_replies,
+        'unread_count': unread_count,
     })

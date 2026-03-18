@@ -70,4 +70,6 @@ urlpatterns = [
     path('send-inquiry/<str:username>/', views.send_inquiry_view, name='send_inquiry'),
     path('inbox/', views.inquiry_inbox_view, name='inquiry_inbox'),
     path('inbox/<int:pk>/', views.inquiry_detail_view, name='inquiry_detail'),
+    path('inbox/<int:pk>/reply/', views.send_reply_view, name='send_reply'),
+    path('my-replies/', views.my_replies_view, name='my_replies'),
 ]

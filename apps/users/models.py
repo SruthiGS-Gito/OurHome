@@ -422,3 +422,30 @@ class ServiceInquiry(models.Model):
 
     def __str__(self):
         return f"Inquiry from {self.sender_name} → {self.provider.email}"
+
+
+class InquiryReply(models.Model):
+    """
+    A reply sent by a service provider in response to a ServiceInquiry.
+    Stored so customers can see replies in their dashboard.
+    """
+
+    inquiry = models.ForeignKey(
+        'ServiceInquiry',
+        on_delete=models.CASCADE,
+        related_name='replies',
+    )
+    sender = models.ForeignKey(
+        'User',
+        on_delete=models.CASCADE,
+        related_name='sent_replies',
+    )
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"Reply by {self.sender.full_name} on inquiry #{self.inquiry.pk}"

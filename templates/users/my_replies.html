@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block title %}My Replies — OurHome{% endblock %}
+
+{% block content %}
+<div class="replies-page">
+
+  <div class="replies-header">
+    <a href="{% url 'dashboard' %}" class="back-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      Back to Dashboard
+    </a>
+    <h1>Replies from Professionals</h1>
+    <p>Responses to your inquiries appear here.</p>
+  </div>
+
+  {% if messages %}
+    {% for msg in messages %}
+    <div style="background:#f0fdf4;border:1px solid #86efac;color:#166534;border-radius:10px;padding:12px 18px;margin-bottom:20px;font-size:14px;">{{ msg }}</div>
+    {% endfor %}
+  {% endif %}
+
+  {% if not inquiries_with_replies %}
+  <div class="replies-empty">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--gray-300)" stroke-width="1.5" style="margin-bottom:16px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <h3>No replies yet</h3>
+    <p>When a professional replies to your inquiry, it will appear here.</p>
+    <a href="{% url 'contractor_directory' %}" class="replies-browse-btn">Browse Professionals</a>
+  </div>
+
+  {% else %}
+  <div class="replies-list">
+    {% for inquiry in inquiries_with_replies %}
+    <div class="reply-card">
+
+      <!-- Provider header -->
+      <div class="reply-card-header">
+        <div class="reply-card-avatar">
+          {% if inquiry.provider.profile_photo %}
+            <img src="{{ inquiry.provider.profile_photo.url }}" alt="{{ inquiry.provider.full_name }}">
+          {% else %}
+            {{ inquiry.provider.full_name|first|upper }}
+          {% endif %}
+        </div>
+        <div class="reply-card-meta">
+          <div class="reply-card-name">{{ inquiry.provider.full_name }}</div>
+          <div class="reply-card-role">{{ inquiry.provider.get_user_type_display }}</div>
+          <div class="reply-card-date">Your inquiry: {{ inquiry.created_at|date:"d M Y" }}</div>
+        </div>
+      </div>
+
+      <!-- Original inquiry -->
+      <div class="reply-original">
+        <div class="reply-original-label">Your message</div>
+        <div class="reply-original-text">{{ inquiry.message|truncatechars:200 }}</div>
+      </div>
+
+      <!-- Replies -->
+      {% for reply in inquiry.replies.all %}
+      <div class="reply-item">
+        <div class="reply-item-header">
+          <span class="reply-item-author">{{ reply.sender.full_name }}</span>
+          <span class="reply-item-time">{{ reply.created_at|date:"d M Y, g:i A" }}</span>
+        </div>
+        <div class="reply-item-body">{{ reply.message|linebreaks }}</div>
+      </div>
+      {% endfor %}
+
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+</div>
+
+<style>
+.replies-page { max-width: 760px; margin: 60px auto 120px; padding: 0 24px; }
+.replies-header { margin-bottom: 32px; }
+.back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--gray-500); text-decoration: none; font-size: 13px; margin-bottom: 16px; }
+.back-link:hover { color: var(--primary); }
+.replies-header h1 { font-size: 28px; font-weight: 900; color: var(--black); margin: 0 0 4px; }
+.replies-header p { color: var(--gray-500); margin: 0; font-size: 14px; }
+.replies-empty { text-align: center; padding: 80px 24px; background: #f8fafc; border-radius: 16px; }
+.replies-empty h3 { font-size: 18px; font-weight: 700; color: var(--black); margin: 0 0 8px; }
+.replies-empty p { color: var(--gray-500); margin: 0 0 24px; font-size: 14px; }
+.replies-browse-btn { display: inline-block; background: var(--primary); color: white; padding: 10px 24px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 14px; }
+.replies-list { display: flex; flex-direction: column; gap: 20px; }
+.reply-card { background: white; border-radius: 16px; border: 1.5px solid var(--gray-200); overflow: hidden; }
+.reply-card-header { display: flex; align-items: center; gap: 14px; padding: 20px 24px; background: linear-gradient(135deg,#fdf4ff,#fff0f6); border-bottom: 1px solid var(--gray-200); }
+.reply-card-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--primary); color: white; font-weight: 700; font-size: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
+.reply-card-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.reply-card-name { font-weight: 700; font-size: 15px; color: var(--black); }
+.reply-card-role { font-size: 12px; color: var(--primary); font-weight: 600; margin-top: 2px; }
+.reply-card-date { font-size: 11px; color: var(--gray-400); margin-top: 3px; }
+.reply-original { padding: 16px 24px; background: #f8fafc; border-bottom: 1px solid var(--gray-100); }
+.reply-original-label { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--gray-400); font-weight: 700; margin-bottom: 6px; }
+.reply-original-text { font-size: 13px; color: var(--gray-600); line-height: 1.6; font-style: italic; }
+.reply-item { padding: 18px 24px; border-bottom: 1px solid var(--gray-100); }
+.reply-item:last-child { border-bottom: none; }
+.reply-item-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
+.reply-item-author { font-size: 13px; font-weight: 700; color: var(--primary); }
+.reply-item-time { font-size: 11px; color: var(--gray-400); }
+.reply-item-body { font-size: 14px; color: var(--gray-700); line-height: 1.7; }
+.reply-item-body p { margin: 0; }
+@media (max-width: 768px) {
+  .replies-page { margin: 24px auto 80px; padding: 0 16px; }
+  .reply-card-header, .reply-original, .reply-item { padding: 14px 16px; }
+}
+</style>
+{% endblock %}
