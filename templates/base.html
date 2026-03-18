@@ -31,7 +31,13 @@
     <nav class="navbar" id="navbar">
         <div class="navbar-container">
             <a href="{% url 'home' %}" class="logo">
-                <span class="logo-text">OurHome</span>
+                <svg class="logo-mark" width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <rect x="0" y="0" width="11" height="11" rx="2.5" fill="#FC2779"/>
+                    <rect x="15" y="0" width="11" height="11" rx="2.5" fill="#7C3AED"/>
+                    <rect x="0" y="15" width="11" height="11" rx="2.5" fill="#FC2779" opacity="0.25"/>
+                    <rect x="15" y="15" width="11" height="11" rx="2.5" fill="#7C3AED" opacity="0.25"/>
+                </svg>
+                <span class="logo-text"><span class="logo-our">Our</span><span class="logo-home">Home</span></span>
             </a>
             
             <!-- Search Bar with HTMX live search -->

@@ -65,6 +65,7 @@ CLAUDE.md
 
 # Local dev / utility scripts
 DEMO_CHECKLIST.md
+STUDY_GUIDE.md
 migrate_to_gemini.py
 patch_gemini_final.py
 fix_ourhome_ui.py

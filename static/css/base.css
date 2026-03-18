@@ -105,23 +105,30 @@ a:hover {
 .logo {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 24px;
-    font-weight: 900;
-    color: var(--black);
+    gap: 9px;
     text-decoration: none;
     white-space: nowrap;
 }
 
-.logo-icon {
-    font-size: 26px;
+.logo-mark {
+    flex-shrink: 0;
+    display: block;
 }
 
 .logo-text {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    font-size: 1.25rem;
+    letter-spacing: -0.03em;
+    line-height: 1;
+}
+
+.logo-our {
+    font-weight: 500;
+    color: var(--gray-900);
+}
+
+.logo-home {
+    font-weight: 800;
+    color: var(--primary);
 }
 
 /* Search Bar */
@@ -1058,7 +1065,8 @@ input[type="file"].form-input {
 
     /* Tighten navbar height on mobile */
     .navbar { min-height: 56px; }
-    .logo { font-size: 1.1rem; }
+    .logo-text { font-size: 1.1rem; }
+    .logo-mark { width: 22px; height: 22px; }
 }
 
 /* Show hamburger only on mobile */
