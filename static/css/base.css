@@ -1009,7 +1009,8 @@ input[type="file"].form-input {
         z-index: 1000;
         box-shadow: 0 4px 16px rgba(0,0,0,.08);
     }
-    .nav-links.mobile-open {
+    .nav-links.mobile-open,
+    .nav-links.open {
         display: flex;
     }
     .nav-links .nav-link {
