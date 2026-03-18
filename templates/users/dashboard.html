@@ -341,12 +341,14 @@ TEMPLATE VARIABLES:
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         <div class="info-card-content">
           <span class="info-card-label">Service Inquiries Sent</span>
-          <span class="info-card-value">{{ inquiry_count|default:0 }} inquir{{ inquiry_count|default:0|pluralize:"y,ies" }}</span>
-          <span class="info-card-sub">
-            {% if inquiry_count %}View your sent inquiries{% else %}Find verified contractors →{% endif %}
-          </span>
+          <span class="info-card-value">{{ sent_inquiries_count|default:0 }} inquir{{ sent_inquiries_count|default:0|pluralize:"y,ies" }}</span>
+          {% if sent_inquiries %}
+          <span class="info-card-sub">Last contacted: {{ sent_inquiries.0.provider.full_name }}</span>
+          {% else %}
+          <span class="info-card-sub">Find verified contractors →</span>
+          {% endif %}
         </div>
-        <a href="{% url 'contractor_directory' %}" class="info-card-link">Browse →</a>
+        <a href="{% url 'my_replies' %}" class="info-card-link">View Replies →</a>
       </div>
 
     </div><!-- /dashboard-info-grid -->

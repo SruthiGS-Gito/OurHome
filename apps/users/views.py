@@ -85,9 +85,11 @@ def dashboard_view(request):
             .filter(user=request.user)
             .select_related('product')[:2]
         )
-        context['inquiry_count'] = ServiceInquiry.objects.filter(
+        sent_inquiries = ServiceInquiry.objects.filter(
             sender_email=request.user.email
-        ).count()
+        ).select_related('provider').order_by('-created_at')
+        context['sent_inquiries'] = sent_inquiries
+        context['sent_inquiries_count'] = sent_inquiries.count()
         context['customer_unread_replies'] = InquiryReply.objects.filter(
             inquiry__sender_email=request.user.email,
             is_read=False,
