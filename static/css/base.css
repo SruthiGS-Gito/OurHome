@@ -111,13 +111,13 @@ a:hover {
 }
 
 .logo-icon {
-    font-size: 20px;
+    font-size: 26px;
     color: var(--primary);
     flex-shrink: 0;
 }
 
 .logo-text {
-    font-size: 1.25rem;
+    font-size: 1.6rem;
     letter-spacing: -0.03em;
     line-height: 1;
 }
