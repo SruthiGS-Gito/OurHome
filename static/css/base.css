@@ -110,9 +110,10 @@ a:hover {
     white-space: nowrap;
 }
 
-.logo-mark {
+.logo-icon {
+    font-size: 20px;
+    color: var(--primary);
     flex-shrink: 0;
-    display: block;
 }
 
 .logo-text {
@@ -1066,7 +1067,7 @@ input[type="file"].form-input {
     /* Tighten navbar height on mobile */
     .navbar { min-height: 56px; }
     .logo-text { font-size: 1.1rem; }
-    .logo-mark { width: 22px; height: 22px; }
+    .logo-icon { font-size: 18px; }
 }
 
 /* Show hamburger only on mobile */

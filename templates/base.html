@@ -12,6 +12,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     <!-- Base CSS -->
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     
@@ -31,12 +34,7 @@
     <nav class="navbar" id="navbar">
         <div class="navbar-container">
             <a href="{% url 'home' %}" class="logo">
-                <svg class="logo-mark" width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <rect x="0" y="0" width="11" height="11" rx="2.5" fill="#FC2779"/>
-                    <rect x="15" y="0" width="11" height="11" rx="2.5" fill="#7C3AED"/>
-                    <rect x="0" y="15" width="11" height="11" rx="2.5" fill="#FC2779" opacity="0.25"/>
-                    <rect x="15" y="15" width="11" height="11" rx="2.5" fill="#7C3AED" opacity="0.25"/>
-                </svg>
+                <i class="fa-solid fa-house logo-icon"></i>
                 <span class="logo-text"><span class="logo-our">Our</span><span class="logo-home">Home</span></span>
             </a>
             
