@@ -39,9 +39,6 @@ Integration with the **Groq API (LLaMA 3.3 70B)** allows for automated analysis 
 
 ## 👤 Team Details (NG_CP_Team_4865)
 * **Sruthi G S** - [LinkedIn](https://www.linkedin.com/in/sruthi-g-s-381b96366) | [GitHub](https://github.com/SruthiGS-Gito)
-* **R Anand**
-* **Judith Susan Soney**
-* **Vrinda V**
 * **College:** Sree Buddha College of Engineering, Pattoor
 
 ---
